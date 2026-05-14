@@ -135,6 +135,42 @@ hr {
   .container { padding-inline: var(--container-pad-md); }
 }
 
+/* Shared chip button — masthead search/theme toggle, etc. */
+.chip-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: var(--s-1) var(--s-2);
+  min-height: 1.85rem;
+  font-family: var(--font-mono);
+  font-size: var(--t-mono-chrome);
+  font-weight: var(--w-mono);
+  line-height: 1;
+  letter-spacing: var(--t-mono-letter);
+  text-transform: uppercase;
+  color: var(--c-ink-muted);
+  background: transparent;
+  border: var(--rule-w) solid var(--c-rule);
+  border-radius: 0;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease);
+}
+.chip-button:hover,
+.chip-button:focus-visible {
+  color: var(--c-accent);
+  border-color: var(--c-rule-strong);
+}
+.chip-icon {
+  display: block;
+  flex-shrink: 0;
+}
+@media (max-width: 600px) {
+  .chip-label { display: none; }
+}
+
 .skip-link {
   position: absolute;
   top: -10rem;

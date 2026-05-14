@@ -5,12 +5,26 @@
 ---
 <button
   type="button"
-  class="theme-toggle mono-chrome"
+  class="chip-button theme-toggle"
   aria-label="Toggle colour scheme"
   data-theme-toggle
 >
-  <span class="when-light" aria-hidden="true">DARK</span>
-  <span class="when-dark"  aria-hidden="true">LIGHT</span>
+  <svg class="chip-icon when-light" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+    <path d="M8 1.5a6.5 6.5 0 1 0 6.43 7.5A4.6 4.6 0 0 1 8.5 2.04 6.6 6.6 0 0 0 8 1.5Z"/>
+  </svg>
+  <svg class="chip-icon when-dark" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+    <circle cx="8" cy="8" r="3"/>
+    <line x1="8" y1="1"  x2="8"  y2="3" stroke-linecap="square"/>
+    <line x1="8" y1="13" x2="8"  y2="15" stroke-linecap="square"/>
+    <line x1="1" y1="8"  x2="3"  y2="8" stroke-linecap="square"/>
+    <line x1="13" y1="8" x2="15" y2="8" stroke-linecap="square"/>
+    <line x1="3.2"  y1="3.2"  x2="4.6"  y2="4.6"  stroke-linecap="square"/>
+    <line x1="11.4" y1="11.4" x2="12.8" y2="12.8" stroke-linecap="square"/>
+    <line x1="3.2"  y1="12.8" x2="4.6"  y2="11.4" stroke-linecap="square"/>
+    <line x1="11.4" y1="4.6"  x2="12.8" y2="3.2"  stroke-linecap="square"/>
+  </svg>
+  <span class="chip-label when-light">DARK</span>
+  <span class="chip-label when-dark">LIGHT</span>
 </button>
 
 <script is:inline>
@@ -20,7 +34,6 @@
     btn.addEventListener('click', function () {
       const root = document.documentElement
       const current = root.getAttribute('data-theme')
-      // Three states: unset (follow system), 'light', 'dark'. Cycle: unset → opposite-of-system → opposite → unset.
       const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
       let next
       if (!current) next = systemDark ? 'light' : 'dark'
@@ -33,26 +46,17 @@
 </script>
 
 <style>
-  .theme-toggle {
-    color: var(--c-ink-muted);
-    padding: var(--s-1) var(--s-2);
-    border: var(--rule-w) solid transparent;
-    border-radius: 0;
-    transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
-  }
-  .theme-toggle:hover {
-    color: var(--c-accent);
-    border-color: var(--c-rule);
-  }
+  /* Theme-state visibility — show the moon + "DARK" when we're currently
+   * light (i.e. clicking the button will switch TO dark), and vice versa. */
   .when-dark { display: none; }
-  :root[data-theme='dark'] .when-light,
-  :root:not([data-theme='light']) .when-light { display: inline; }
-  :root[data-theme='dark'] .when-dark { display: inline; }
-  :root[data-theme='light'] .when-light { display: inline; }
+  :root[data-theme='light'] .when-light { display: inline-block; }
   :root[data-theme='light'] .when-dark { display: none; }
+  :root[data-theme='dark']  .when-light { display: none; }
+  :root[data-theme='dark']  .when-dark  { display: inline-block; }
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme='light']) .when-light { display: none; }
-    :root:not([data-theme='light']) .when-dark { display: inline; }
+    :root:not([data-theme='light']) .when-dark  { display: inline-block; }
   }
+
 </style>
