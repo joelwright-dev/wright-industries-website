@@ -1,0 +1,184 @@
+---
+// Site-wide ⌘K / Ctrl+K search modal. Native <dialog> with the Pagefind UI
+// inside. Pagefind is lazy-loaded on first open so initial page weight isn't
+// inflated. The modal lives in BaseLayout so every page picks it up.
+//
+// Graceful degradation: if the browser doesn't support <dialog>.showModal()
+// or the Pagefind index isn't built, the trigger falls back to navigating
+// to /search.
+---
+<dialog
+  id="search-modal"
+  class="search-modal"
+  aria-labelledby="search-modal-title"
+>
+  <header class="modal-head">
+    <p id="search-modal-title" class="modal-title mono-chrome">
+      <span class="modal-rule" aria-hidden="true"></span>
+      <span>SEARCH</span>
+    </p>
+    <button
+      type="button"
+      class="modal-close mono-chrome"
+      aria-label="Close search"
+      data-close
+    >
+      <span aria-hidden="true">Esc</span>
+    </button>
+  </header>
+  <div id="search-modal-mount" class="modal-body"></div>
+</dialog>
+
+<script is:inline>
+  (function () {
+    var dialog = document.getElementById('search-modal')
+    if (!dialog) return
+    var mount = document.getElementById('search-modal-mount')
+    var initialized = false
+    var loadFailed = false
+
+    function ensurePagefind() {
+      if (initialized || loadFailed) return
+      initialized = true
+      import('/pagefind/pagefind-ui.js')
+        .then(function (mod) {
+          new mod.PagefindUI({
+            element: '#search-modal-mount',
+            showSubResults: true,
+            showImages: false,
+            resetStyles: false,
+            autofocus: true,
+            translations: {
+              placeholder: 'Search notes, releases, projects…',
+              clear_search: 'Clear',
+              load_more: 'Load more results',
+              search_label: 'Search Wright Industries',
+              zero_results: 'No results for [SEARCH_TERM].',
+              many_results: '[COUNT] results for [SEARCH_TERM].',
+              one_result: '[COUNT] result for [SEARCH_TERM].',
+            },
+          })
+        })
+        .catch(function () {
+          loadFailed = true
+          initialized = false
+          if (mount) {
+            mount.innerHTML =
+              '<p class="search-unbuilt mono-margin">Search index has not been built yet. Run <code>pnpm build</code> first.</p>'
+          }
+        })
+    }
+
+    function openModal() {
+      if (typeof dialog.showModal !== 'function') {
+        // Browser lacks <dialog> — fall back to the dedicated page.
+        location.href = '/search'
+        return
+      }
+      if (!dialog.open) dialog.showModal()
+      ensurePagefind()
+      // Focus the search input after Pagefind has rendered.
+      setTimeout(function () {
+        var input = dialog.querySelector('input[type="text"], input[type="search"]')
+        if (input) input.focus()
+      }, 30)
+    }
+
+    window.__openSearchModal = openModal
+
+    document.addEventListener('keydown', function (e) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        openModal()
+      }
+    })
+
+    var closeBtn = dialog.querySelector('[data-close]')
+    if (closeBtn) closeBtn.addEventListener('click', function () { dialog.close() })
+
+    // Backdrop click closes (only when the click target IS the dialog itself).
+    dialog.addEventListener('click', function (e) {
+      if (e.target === dialog) dialog.close()
+    })
+
+    // Clicking a search result navigates and closes the dialog.
+    dialog.addEventListener('click', function (e) {
+      var t = e.target
+      while (t && t !== dialog) {
+        if (t.tagName === 'A' && t.href) { dialog.close(); break }
+        t = t.parentNode
+      }
+    })
+  })()
+</script>
+
+<style>
+  .search-modal {
+    width: min(720px, calc(100vw - 2rem));
+    max-height: 80vh;
+    padding: 0;
+    border: var(--rule-w-strong) solid var(--c-ink);
+    background: var(--c-bg);
+    color: var(--c-ink);
+    box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.35);
+    margin: auto;
+  }
+  .search-modal::backdrop {
+    background: rgba(26, 22, 18, 0.55);
+    backdrop-filter: blur(2px);
+  }
+  .modal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--s-2) var(--s-3);
+    border-bottom: var(--rule-w) solid var(--c-rule);
+    background: var(--c-bg-elev);
+  }
+  .modal-title {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    color: var(--c-ink-muted);
+  }
+  .modal-rule {
+    display: inline-block;
+    width: 1.25rem;
+    height: var(--rule-w-strong);
+    background: var(--c-accent);
+  }
+  .modal-close {
+    color: var(--c-ink-muted);
+    border: var(--rule-w) solid var(--c-rule);
+    padding: 0.15rem var(--s-1);
+    background: var(--c-bg);
+    transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+  }
+  .modal-close:hover, .modal-close:focus-visible {
+    color: var(--c-accent);
+    border-color: var(--c-rule-strong);
+  }
+  .modal-body {
+    padding: var(--s-3) var(--s-3) var(--s-4);
+    overflow-y: auto;
+    max-height: calc(80vh - 3rem);
+  }
+</style>
+
+<style is:global>
+  /* Theme overrides for the Pagefind default UI within the modal context.
+   * Variables documented at https://pagefind.app/docs/ui-usage/#styling */
+  :root {
+    --pagefind-ui-scale: 0.9;
+    --pagefind-ui-primary: var(--c-ink);
+    --pagefind-ui-text: var(--c-ink);
+    --pagefind-ui-background: var(--c-bg-elev);
+    --pagefind-ui-border: var(--c-rule);
+    --pagefind-ui-tag: var(--c-bg-elev);
+    --pagefind-ui-border-width: var(--rule-w);
+    --pagefind-ui-border-radius: 0;
+    --pagefind-ui-image-border-radius: 0;
+    --pagefind-ui-image-box-ratio: 16 / 9;
+    --pagefind-ui-font: var(--font-body);
+  }
+</style>

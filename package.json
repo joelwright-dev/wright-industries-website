@@ -9,7 +9,7 @@
   "packageManager": "pnpm@11.1.1",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build && pagefind --site .vercel/output/static",
+    "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
     "typecheck": "astro check",

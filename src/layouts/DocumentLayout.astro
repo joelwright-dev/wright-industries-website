@@ -69,6 +69,17 @@ const stripLeft = `DOCUMENT ${docNum} · ${projectCode} · ${typeLabel} · ${ent
           <h1 class="doc-title">{entry.title}</h1>
         </header>
 
+        {entry.coverUrl && (
+          <figure class="doc-cover">
+            <img
+              src={entry.coverUrl}
+              alt={`Cover image for ${entry.title}`}
+              loading="eager"
+              decoding="async"
+            />
+          </figure>
+        )}
+
         <div class="prose">
           <slot />
         </div>
@@ -163,6 +174,16 @@ const stripLeft = `DOCUMENT ${docNum} · ${projectCode} · ${typeLabel} · ${ent
     letter-spacing: -0.01em;
   }
 
+  .doc-cover {
+    margin: 0 0 var(--s-5) 0;
+  }
+  .doc-cover img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border: var(--rule-w) solid var(--c-rule);
+    display: block;
+  }
   .doc-end {
     margin-top: var(--s-6);
     background: var(--c-rule);

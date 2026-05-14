@@ -1,11 +1,22 @@
 ---
-// Search trigger — cosmetic-only for the placeholder homepage review. The
-// real Cmd/Ctrl-K modal lands in the search task.
+// Trigger for the site-wide search modal. Falls back to the /search page
+// when JS is disabled or the modal isn't available.
 ---
-<a class="search-trigger mono-chrome" href="/search" aria-label="Search">
+<a class="search-trigger mono-chrome" href="/search" data-open-search aria-label="Open search">
   <span class="search-label">SEARCH</span>
   <span class="search-shortcut" aria-hidden="true">⌘K</span>
 </a>
+
+<script is:inline>
+  document.querySelectorAll('[data-open-search]').forEach(function (el) {
+    el.addEventListener('click', function (e) {
+      if (typeof window.__openSearchModal === 'function') {
+        e.preventDefault()
+        window.__openSearchModal()
+      }
+    })
+  })
+</script>
 
 <style>
   .search-trigger {
@@ -18,7 +29,7 @@
     border: var(--rule-w) solid var(--c-rule);
     transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
   }
-  .search-trigger:hover {
+  .search-trigger:hover, .search-trigger:focus-visible {
     color: var(--c-accent);
     border-color: var(--c-rule-strong);
   }

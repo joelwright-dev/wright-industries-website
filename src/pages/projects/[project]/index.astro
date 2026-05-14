@@ -71,6 +71,17 @@ const ld = [
       {project.description && <p class="project-desc">{project.description}</p>}
     </header>
 
+    {project.coverUrl && (
+      <figure class="project-cover">
+        <img
+          src={project.coverUrl}
+          alt={`Cover image for ${project.title}`}
+          loading="eager"
+          decoding="async"
+        />
+      </figure>
+    )}
+
     {project.blocks.length > 0 && (
       <section class="project-overview">
         <hr class="project-divider" />
@@ -173,6 +184,17 @@ const ld = [
   .project-divider {
     background: var(--c-rule);
     margin-block: var(--s-5);
+  }
+  .project-cover {
+    margin: var(--s-5) 0 0;
+    max-width: 100%;
+  }
+  .project-cover img {
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border: var(--rule-w) solid var(--c-rule);
+    display: block;
   }
   .project-overview { margin-bottom: var(--s-5); }
 
