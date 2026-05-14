@@ -32,16 +32,27 @@
   position: relative;
 }
 
+/* Pagefind injects a magnifying-glass SVG via `::before` on the form. We
+ * already say "SEARCH" in the modal header, in the trigger label, and in
+ * the placeholder — the icon is redundant. */
+.pagefind-ui__form::before {
+  display: none !important;
+  content: none !important;
+}
+
 .pagefind-ui__search-input {
   font-family: var(--font-body) !important;
   font-size: var(--t-body-lg) !important;
   font-weight: var(--w-body) !important;
   font-variation-settings: 'opsz' 20;
   line-height: 1.4 !important;
+  height: auto !important; /* Pagefind hard-codes a 64px height; let padding drive */
+  min-height: 2.5rem;
   background: var(--c-bg-elev) !important;
   border: var(--rule-w-strong) solid var(--c-rule) !important;
   color: var(--c-ink) !important;
-  padding: var(--s-2) var(--s-3) !important;
+  /* Right-padding leaves room for the absolutely-positioned clear button. */
+  padding: var(--s-2) var(--s-6) var(--s-2) var(--s-3) !important;
   border-radius: 0 !important;
   box-shadow: none !important;
 }
@@ -56,9 +67,15 @@
   color: var(--c-ink-muted) !important;
   font-style: italic;
   font-variation-settings: 'opsz' 20;
+  opacity: 1 !important; /* Pagefind sets opacity: 0.2 which renders nearly invisible */
 }
 
 .pagefind-ui__search-clear {
+  position: absolute !important;
+  top: 50% !important;
+  right: var(--s-2) !important;
+  transform: translateY(-50%) !important;
+  height: auto !important;
   font-family: var(--font-mono) !important;
   font-size: var(--t-mono-chrome) !important;
   font-weight: var(--w-mono) !important;
@@ -67,7 +84,7 @@
   text-transform: uppercase;
   letter-spacing: var(--t-mono-letter);
   border-radius: 0 !important;
-  padding: 0 var(--s-2) !important;
+  padding: var(--s-1) var(--s-2) !important;
 }
 
 .pagefind-ui__search-clear:hover {
