@@ -1,0 +1,145 @@
+/* Long-form content styles. Applied via `class="prose"` to a container that
+ * holds the rendered Notion blocks (or, for the placeholder review, hand-
+ * authored Astro markup). Constrained to --measure for readability. */
+
+.prose {
+  font-family: var(--font-body);
+  font-size: var(--t-body);
+  line-height: var(--t-body-lh);
+  max-width: var(--measure);
+  color: var(--c-ink);
+  font-variation-settings: 'opsz' 16;
+}
+
+.prose > * + * { margin-top: var(--s-3); }
+
+.prose p {
+  text-wrap: pretty;
+  font-feature-settings: 'kern' 1, 'liga' 1, 'onum' 1;
+}
+
+.prose strong { font-weight: var(--w-body-em); }
+.prose em { font-style: italic; font-variation-settings: 'opsz' 16; }
+
+.prose h2 {
+  font-family: var(--font-display);
+  font-size: var(--t-d3);
+  line-height: var(--t-d3-lh);
+  font-weight: var(--w-display);
+  font-variation-settings: 'opsz' 32;
+  margin-top: var(--s-6);
+  margin-bottom: var(--s-3);
+  padding-bottom: var(--s-1);
+  border-bottom: var(--rule-w) solid var(--c-rule);
+  text-wrap: balance;
+}
+
+.prose h3 {
+  font-family: var(--font-display);
+  font-size: var(--t-d4);
+  line-height: var(--t-d4-lh);
+  font-weight: var(--w-display);
+  font-variation-settings: 'opsz' 24;
+  margin-top: var(--s-5);
+  margin-bottom: var(--s-2);
+  text-wrap: balance;
+}
+
+.prose h4 {
+  font-family: var(--font-display);
+  font-size: var(--t-d5);
+  line-height: var(--t-d5-lh);
+  font-weight: var(--w-display-bold);
+  font-variation-settings: 'opsz' 18;
+  margin-top: var(--s-4);
+}
+
+.prose blockquote {
+  border-left: var(--rule-w-strong) solid var(--c-rule-strong);
+  padding-left: var(--s-3);
+  font-style: italic;
+  color: var(--c-ink-muted);
+  margin-block: var(--s-4);
+  font-variation-settings: 'opsz' 24;
+}
+
+.prose code {
+  font-family: var(--font-mono);
+  font-size: var(--t-mono-caption);
+  background: var(--c-bg-elev);
+  padding: 0.1em 0.35em;
+  border: var(--rule-w) solid var(--c-rule);
+  letter-spacing: 0;
+}
+
+.prose pre {
+  font-family: var(--font-mono);
+  font-size: var(--t-mono-caption);
+  line-height: var(--t-mono-caption-lh);
+  background: var(--c-bg-elev);
+  border: var(--rule-w) solid var(--c-rule);
+  padding: var(--s-3);
+  overflow-x: auto;
+  margin-block: var(--s-4);
+}
+.prose pre code {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+.prose ul, .prose ol {
+  padding-left: var(--s-4);
+}
+.prose li + li { margin-top: var(--s-1); }
+
+.prose hr {
+  margin-block: var(--s-5);
+  background: var(--c-rule);
+}
+
+.prose a {
+  color: var(--c-ink-secondary);
+  text-decoration: underline;
+  text-decoration-thickness: 0.06em;
+  text-underline-offset: 0.18em;
+}
+.prose a:hover { color: var(--c-accent); }
+
+.prose figure {
+  margin-block: var(--s-5);
+  /* Figures may exceed the prose measure by design */
+  max-width: none;
+}
+
+.prose figure img {
+  width: 100%;
+  height: auto;
+  border: var(--rule-w) solid var(--c-rule);
+}
+
+.prose figcaption {
+  font-family: var(--font-mono);
+  font-size: var(--t-mono-caption);
+  line-height: var(--t-mono-caption-lh);
+  letter-spacing: var(--t-mono-letter);
+  color: var(--c-ink-muted);
+  margin-top: var(--s-2);
+  max-width: var(--measure);
+}
+
+/* Pull-quote — explicit class for editorial use */
+.prose .pullquote {
+  font-family: var(--font-display);
+  font-size: var(--t-d4);
+  line-height: 1.3;
+  font-weight: var(--w-display-light);
+  font-style: italic;
+  font-variation-settings: 'opsz' 32;
+  border-left: 0;
+  padding-left: 0;
+  color: var(--c-ink);
+  margin-block: var(--s-5);
+  max-width: var(--measure);
+  text-wrap: balance;
+}

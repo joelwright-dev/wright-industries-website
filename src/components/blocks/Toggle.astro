@@ -1,0 +1,45 @@
+---
+import type { ToggleBlock } from '~/lib/content-blocks'
+import { inlineHTML } from '~/lib/inline'
+import Blocks from './Blocks.astro'
+
+interface Props { block: ToggleBlock }
+const { block } = Astro.props
+---
+<details class="toggle">
+  <summary><span set:html={inlineHTML(block.summary)} /></summary>
+  <div class="toggle-body">
+    <Blocks blocks={block.children} />
+  </div>
+</details>
+
+<style>
+  .toggle {
+    border-top: var(--rule-w) solid var(--c-rule);
+    border-bottom: var(--rule-w) solid var(--c-rule);
+    padding-block: var(--s-2);
+    margin-block: var(--s-3);
+  }
+  .toggle summary {
+    cursor: pointer;
+    list-style: none;
+    padding-left: 1.25rem;
+    position: relative;
+    color: var(--c-ink);
+  }
+  .toggle summary::marker, .toggle summary::-webkit-details-marker { display: none; }
+  .toggle summary::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--c-ink-muted);
+    font-family: var(--font-mono);
+    transition: transform var(--t-fast) var(--ease);
+  }
+  .toggle[open] summary::before { content: '▾'; }
+  .toggle summary:hover { color: var(--c-accent); }
+  .toggle-body {
+    margin-top: var(--s-3);
+    padding-left: 1.25rem;
+  }
+</style>

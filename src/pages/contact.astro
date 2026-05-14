@@ -1,0 +1,182 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro'
+
+// Read submission outcome from the URL on the server. Page-level SSR so
+// the banner renders without a JS round-trip.
+export const prerender = false
+
+const url = new URL(Astro.request.url)
+const ok = url.searchParams.get('ok') === '1'
+const errorRaw = url.searchParams.get('error') ?? ''
+const errors = errorRaw ? errorRaw.split(',').filter(Boolean) : []
+
+const ERROR_MESSAGES: Record<string, string> = {
+  name: 'Please add your name.',
+  email: 'Please add your email.',
+  'email-format': 'That email address looks malformed.',
+  subject: 'Please add a subject.',
+  message: 'Please add a message.',
+  'message-too-long': 'Message is too long (8000 character maximum).',
+}
+---
+<BaseLayout
+  title="Contact"
+  description="Get in touch with Wright Industries."
+  documentStripLeft="DOCUMENT · CONTACT"
+>
+  <article class="container page">
+    <header class="page-header">
+      <p class="kicker mono-chrome">CONTACT</p>
+      <h1 class="page-title">Get in touch</h1>
+      <p class="page-lede">
+        Corrections, questions, supplier tips, or interest in commissioned
+        work. The form below routes to a personal inbox.
+      </p>
+    </header>
+
+    <hr class="rule" />
+
+    {ok && (
+      <aside class="banner banner-ok" role="status">
+        <p class="banner-kicker mono-chrome">MESSAGE RECEIVED</p>
+        <p class="banner-body">
+          Thank you. Your message has been logged. Email delivery is still
+          stubbed — once the domain is verified, replies will land in your
+          inbox; until then your message lives in the function logs and will
+          be retrieved manually.
+        </p>
+      </aside>
+    )}
+
+    {errors.length > 0 && (
+      <aside class="banner banner-err" role="alert">
+        <p class="banner-kicker mono-chrome">ERROR</p>
+        <ul class="banner-list">
+          {errors.map((e) => (
+            <li>{ERROR_MESSAGES[e] ?? `Unknown error: ${e}`}</li>
+          ))}
+        </ul>
+      </aside>
+    )}
+
+    <form class="contact-form" action="/api/contact" method="post" novalidate>
+      <div class="field">
+        <label for="name" class="mono-chrome">Name</label>
+        <input id="name" name="name" type="text" required autocomplete="name" />
+      </div>
+      <div class="field">
+        <label for="email" class="mono-chrome">Email</label>
+        <input id="email" name="email" type="email" required autocomplete="email" />
+      </div>
+      <div class="field">
+        <label for="subject" class="mono-chrome">Subject</label>
+        <input id="subject" name="subject" type="text" required />
+      </div>
+      <div class="field">
+        <label for="message" class="mono-chrome">Message</label>
+        <textarea id="message" name="message" rows="8" required></textarea>
+      </div>
+      <button type="submit" class="submit mono-chrome">Send →</button>
+      <p class="form-note mono-margin">
+        The contact endpoint is stubbed until the domain DKIM/SPF is wired up.
+        Submissions are logged but not yet delivered to email.
+      </p>
+    </form>
+  </article>
+</BaseLayout>
+
+<style>
+  .page { padding-block: var(--s-6) var(--s-8); }
+  .page-header { max-width: var(--measure); }
+  .kicker { color: var(--c-ink-muted); margin-bottom: var(--s-2); }
+  .page-title {
+    font-family: var(--font-display);
+    font-size: var(--t-d1);
+    line-height: var(--t-d1-lh);
+    font-weight: var(--w-display-light);
+    font-variation-settings: 'opsz' 60;
+    letter-spacing: -0.01em;
+  }
+  .page-lede {
+    margin-top: var(--s-3);
+    font-size: var(--t-body-lg);
+    font-style: italic;
+    color: var(--c-ink-muted);
+    font-variation-settings: 'opsz' 24;
+  }
+  .rule { margin-block: var(--s-5); background: var(--c-rule); }
+
+  .contact-form {
+    max-width: var(--measure);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-1);
+  }
+  .field label {
+    color: var(--c-ink-muted);
+  }
+  .field input,
+  .field textarea {
+    font-family: var(--font-body);
+    font-size: var(--t-body);
+    line-height: 1.5;
+    color: var(--c-ink);
+    background: var(--c-bg-elev);
+    border: var(--rule-w) solid var(--c-rule);
+    padding: var(--s-2) var(--s-3);
+    border-radius: 0;
+    transition: border-color var(--t-fast) var(--ease);
+  }
+  .field input:focus,
+  .field textarea:focus {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+    border-color: var(--c-rule-strong);
+  }
+  .field textarea {
+    resize: vertical;
+    min-height: 8rem;
+    font-variation-settings: 'opsz' 16;
+  }
+  .submit {
+    align-self: flex-start;
+    background: var(--c-ink);
+    color: var(--c-bg);
+    padding: var(--s-2) var(--s-4);
+    border: var(--rule-w-strong) solid var(--c-ink);
+    transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+  }
+  .submit:hover {
+    background: var(--c-accent);
+    border-color: var(--c-accent);
+  }
+  .form-note {
+    color: var(--c-ink-muted);
+    margin-top: calc(-1 * var(--s-2));
+  }
+
+  .banner {
+    max-width: var(--measure);
+    padding: var(--s-3);
+    border-left: var(--rule-w-strong) solid var(--c-rule-strong);
+    background: var(--c-bg-elev);
+    margin-bottom: var(--s-4);
+  }
+  .banner-ok { border-left-color: var(--c-ink-secondary); }
+  .banner-err { border-left-color: var(--c-accent); }
+  .banner-kicker {
+    color: var(--c-ink-muted);
+    margin-bottom: var(--s-1);
+  }
+  .banner-err .banner-kicker { color: var(--c-accent); }
+  .banner-body { color: var(--c-ink); }
+  .banner-list {
+    padding-left: var(--s-4);
+    color: var(--c-ink);
+  }
+</style>

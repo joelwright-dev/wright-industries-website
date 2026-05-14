@@ -1,0 +1,44 @@
+---
+import DocumentLayout from '~/layouts/DocumentLayout.astro'
+import Blocks from '~/components/blocks/Blocks.astro'
+import { source } from '~/lib/source'
+import { estimatedReadMinutes } from '~/lib/read-time'
+import { articleSchema, breadcrumbSchema } from '~/lib/schema'
+import { SITE } from '~/config/site'
+import type { GetStaticPaths } from 'astro'
+
+export const getStaticPaths = (async () => {
+  const allEntries = await source.listAllEntries()
+  return allEntries
+    .filter((e) => e.type === 'release')
+    .map((entry) => ({
+      params: { project: entry.projectSlug, slug: entry.slug },
+      props: { projectSlug: entry.projectSlug, entrySlug: entry.slug },
+    }))
+}) satisfies GetStaticPaths
+
+interface Props { projectSlug: string; entrySlug: string }
+const { projectSlug, entrySlug } = Astro.props as Props
+
+const [entry, project] = await Promise.all([
+  source.getEntry(projectSlug, entrySlug),
+  source.getProject(projectSlug),
+])
+if (!entry) throw new Error(`Release not found: ${projectSlug}/${entrySlug}`)
+if (!project) throw new Error(`Project not found: ${projectSlug}`)
+
+const estRead = estimatedReadMinutes(entry.blocks)
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? SITE.url
+const ld = [
+  articleSchema(entry, project, siteUrl),
+  breadcrumbSchema([
+    { name: 'Home', url: `${siteUrl}/` },
+    { name: 'Projects', url: `${siteUrl}/projects` },
+    { name: project.title, url: `${siteUrl}/projects/${project.slug}` },
+    { name: entry.title, url: `${siteUrl}/projects/${project.slug}/releases/${entry.slug}` },
+  ]),
+]
+---
+<DocumentLayout entry={entry} project={project} estReadMinutes={estRead} jsonLD={ld}>
+  <Blocks blocks={entry.blocks} />
+</DocumentLayout>

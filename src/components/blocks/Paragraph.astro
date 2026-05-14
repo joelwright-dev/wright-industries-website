@@ -1,0 +1,21 @@
+---
+import type { ParagraphBlock } from '~/lib/content-blocks'
+import { inlineHTML } from '~/lib/inline'
+
+interface Props { block: ParagraphBlock }
+const { block } = Astro.props
+const html = inlineHTML(block.runs)
+---
+{html.length > 0
+  ? <p set:html={html} />
+  : <p class="empty-paragraph" aria-hidden="true">&nbsp;</p>}
+
+<style>
+  .empty-paragraph {
+    /* Notion empty paragraphs preserve spacing — render as a visible gap
+     * without polluting the accessibility tree. */
+    margin-block: var(--s-3);
+    visibility: hidden;
+    line-height: 1;
+  }
+</style>

@@ -1,0 +1,8 @@
+---
+import type { ContentBlock } from '~/lib/content-blocks'
+import Block from './Block.astro'
+
+interface Props { blocks: readonly ContentBlock[] }
+const { blocks } = Astro.props
+---
+{blocks.map((b) => <Block block={b} />)}

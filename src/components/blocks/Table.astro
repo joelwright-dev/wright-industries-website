@@ -1,0 +1,65 @@
+---
+import type { TableBlock } from '~/lib/content-blocks'
+import { inlineHTML } from '~/lib/inline'
+
+interface Props { block: TableBlock }
+const { block } = Astro.props
+
+const headerRow = block.hasHeaderRow ? block.rows[0] : null
+const bodyRows = block.hasHeaderRow ? block.rows.slice(1) : block.rows
+---
+<div class="table-scroll">
+  <table>
+    {headerRow && (
+      <thead>
+        <tr>
+          {headerRow.cells.map((cell) => (
+            <th set:html={inlineHTML(cell)} />
+          ))}
+        </tr>
+      </thead>
+    )}
+    <tbody>
+      {bodyRows.map((row) => (
+        <tr>
+          {row.cells.map((cell, ci) =>
+            block.hasHeaderColumn && ci === 0
+              ? <th scope="row" set:html={inlineHTML(cell)} />
+              : <td set:html={inlineHTML(cell)} />,
+          )}
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .table-scroll {
+    margin-block: var(--s-4);
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-body);
+    font-size: var(--t-body-sm);
+  }
+  th, td {
+    text-align: left;
+    padding: var(--s-2) var(--s-3);
+    border-bottom: var(--rule-w) solid var(--c-rule);
+    vertical-align: top;
+  }
+  thead th {
+    border-bottom: var(--rule-w-strong) solid var(--c-rule-strong);
+    color: var(--c-ink);
+    font-family: var(--font-mono);
+    font-size: var(--t-mono-caption);
+    text-transform: uppercase;
+    letter-spacing: var(--t-mono-letter);
+  }
+  tbody th {
+    color: var(--c-ink);
+    font-weight: var(--w-body-em);
+  }
+</style>

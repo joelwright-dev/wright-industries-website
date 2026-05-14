@@ -1,0 +1,12 @@
+---
+import type { QuoteBlock } from '~/lib/content-blocks'
+import { inlineHTML } from '~/lib/inline'
+import Blocks from './Blocks.astro'
+
+interface Props { block: QuoteBlock }
+const { block } = Astro.props
+---
+<blockquote>
+  <p set:html={inlineHTML(block.runs)} />
+  {block.children.length > 0 && <Blocks blocks={block.children} />}
+</blockquote>

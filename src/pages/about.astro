@@ -1,0 +1,99 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro'
+import '~/styles/prose.css'
+import { SITE } from '~/config/site'
+---
+<BaseLayout
+  title="About"
+  description="About Wright Industries — who, what, why."
+  documentStripLeft="DOCUMENT · ABOUT"
+  largeWordmark={false}
+>
+  <article class="container about">
+    <header class="about-header">
+      <p class="kicker mono-chrome">ABOUT</p>
+      <h1 class="about-title">{SITE.title}</h1>
+      <p class="about-lede">{SITE.tagline}</p>
+    </header>
+
+    <hr class="rule" />
+
+    <div class="prose about-body">
+      <p>
+        This site is a working notebook. It documents the design, manufacture,
+        and refurbishment of nixie tubes and the clocks and electronics built
+        around them — published in public as the work happens rather than
+        waiting for finished results.
+      </p>
+
+      <h2>Who</h2>
+      <p>
+        Wright Industries is the working name for the workshop of Joel Wright
+        in Brisbane, Australia. The intent over time is to register
+        <em>J. Wright Industries</em> as a sole-trader business and to ship
+        small runs of custom-built nixie clocks, tube refurbishments, and
+        related electronics. Phase one is the documentation site you're
+        reading.
+      </p>
+
+      <h2>What</h2>
+      <p>
+        Each <strong>project</strong> documents one body of work — a clock, a
+        driver board, a piece of workshop tooling — and contains two kinds of
+        content:
+      </p>
+      <ul>
+        <li>
+          <strong>Notes</strong> are rough, dated build-log entries. Questions
+          asked of myself, experiments tried, dead ends hit, decisions
+          recorded with their reasoning. Most of the volume here is notes.
+        </li>
+        <li>
+          <strong>Releases</strong> are longer, more refined milestone
+          write-ups intended to stand on their own. Schematic releases,
+          procedure documents, retrospectives, the occasional manifesto.
+        </li>
+      </ul>
+
+      <h2>Why</h2>
+      <p>
+        Most of the nixie literature lives in scattered forum threads and
+        out-of-print Soviet manuals. The intent here is to add to the public
+        record in a way that is durable, searchable, and honest about the
+        messy in-between work — not just polished outcomes.
+      </p>
+
+      <p>
+        If something here is useful to you, that is the point. If something
+        here is wrong, please tell me — there's a <a href="/contact">contact
+        form</a> and an RSS feed.
+      </p>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .about { padding-block: var(--s-6) var(--s-8); }
+  .about-header { max-width: var(--measure); }
+  .kicker { color: var(--c-ink-muted); margin-bottom: var(--s-2); }
+  .about-title {
+    font-family: var(--font-display);
+    font-size: var(--t-d1);
+    line-height: var(--t-d1-lh);
+    font-weight: var(--w-display-light);
+    font-variation-settings: 'opsz' 60;
+    letter-spacing: -0.01em;
+  }
+  .about-lede {
+    margin-top: var(--s-3);
+    font-size: var(--t-body-lg);
+    font-style: italic;
+    color: var(--c-ink-muted);
+    font-variation-settings: 'opsz' 24;
+  }
+  .rule {
+    margin-block: var(--s-5);
+    background: var(--c-rule);
+  }
+  .about-body { max-width: var(--measure); }
+</style>

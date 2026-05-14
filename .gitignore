@@ -1,0 +1,34 @@
+# build output
+dist/
+.astro/
+.vercel/
+
+# pagefind output (regenerated each build)
+pagefind/
+
+# dependencies
+node_modules/
+
+# environment
+.env
+.env.local
+.env.*.local
+
+# logs
+*.log
+.pnpm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+
+# notion image cache (downloaded at build, content-hashed)
+public/_notion-images/
+
+# editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# claude code local config (machine-specific permission cache)
+.claude/settings.local.json

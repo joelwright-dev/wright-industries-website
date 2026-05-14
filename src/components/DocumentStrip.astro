@@ -1,0 +1,41 @@
+---
+// Top metadata bar — the "document strip" that gives every page its
+// printed-report identity. Left and right are slotted so individual pages
+// pass their own content (e.g. "DOCUMENT 0042 · NIXIE V3 · NOTE" on the
+// left, ISO date on the right).
+---
+<div class="document-strip" role="presentation">
+  <div class="container strip-row">
+    <div class="strip-left mono-chrome"><slot name="left" /></div>
+    <div class="strip-right mono-chrome"><slot name="right" /></div>
+  </div>
+</div>
+
+<style>
+  .document-strip {
+    border-top: var(--rule-w-strong) solid var(--c-accent);
+    border-bottom: var(--rule-w) solid var(--c-rule);
+    background: var(--c-bg-elev);
+  }
+  .strip-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--s-3);
+    padding-block: var(--s-1);
+    min-height: 2rem;
+    color: var(--c-ink-muted);
+  }
+  .strip-left {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .strip-right {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  @media (max-width: 600px) {
+    .strip-right { display: none; }
+  }
+</style>

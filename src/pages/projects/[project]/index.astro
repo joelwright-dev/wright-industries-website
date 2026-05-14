@@ -1,0 +1,245 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro'
+import Blocks from '~/components/blocks/Blocks.astro'
+import '~/styles/prose.css'
+import { source } from '~/lib/source'
+import type { ProjectStatus } from '~/lib/sources/ContentSource'
+import type { GetStaticPaths } from 'astro'
+import { breadcrumbSchema } from '~/lib/schema'
+import { SITE } from '~/config/site'
+
+export const getStaticPaths = (async () => {
+  const projects = await source.listProjects()
+  return projects.map((p) => ({
+    params: { project: p.slug },
+    props: { projectSlug: p.slug },
+  }))
+}) satisfies GetStaticPaths
+
+interface Props { projectSlug: string }
+const { projectSlug } = Astro.props as Props
+
+const project = await source.getProject(projectSlug)
+if (!project) throw new Error(`Project not found: ${projectSlug}`)
+
+const entries = await source.listEntries(projectSlug)
+const releases = entries.filter((e) => e.type === 'release')
+const notes = entries.filter((e) => e.type === 'note').sort((a, b) => b.date.localeCompare(a.date))
+const releasesDesc = [...releases].sort((a, b) => b.date.localeCompare(a.date))
+
+const STATUS_LABEL: Record<ProjectStatus, string> = {
+  active: 'ACTIVE',
+  planning: 'PLANNING',
+  future: 'FUTURE',
+  'on-hold': 'ON HOLD',
+  archived: 'ARCHIVED',
+}
+
+const stripLeft = `PROJECT · ${project.slug.toUpperCase()} · ${project.status.toUpperCase()}`
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? SITE.url
+const ld = [
+  breadcrumbSchema([
+    { name: 'Home', url: `${siteUrl}/` },
+    { name: 'Projects', url: `${siteUrl}/projects` },
+    { name: project.title, url: `${siteUrl}/projects/${project.slug}` },
+  ]),
+]
+---
+<BaseLayout
+  title={project.title}
+  description={project.description}
+  documentStripLeft={stripLeft}
+  documentStripRight={project.started ?? ''}
+  jsonLD={ld}
+>
+  <article class="container project" data-pagefind-body>
+    <header class="project-header">
+      <p class="project-kicker mono-chrome">
+        <span>PROJECT</span>
+        <span class="meta-sep" aria-hidden="true">·</span>
+        <span class={`status-chip mono-chrome status-${project.status}`}>
+          {STATUS_LABEL[project.status]}
+        </span>
+        {project.started && (
+          <>
+            <span class="meta-sep" aria-hidden="true">·</span>
+            <span>STARTED {project.started}</span>
+          </>
+        )}
+      </p>
+      <h1 class="project-title">{project.title}</h1>
+      {project.description && <p class="project-desc">{project.description}</p>}
+    </header>
+
+    {project.blocks.length > 0 && (
+      <section class="project-overview">
+        <hr class="project-divider" />
+        <div class="prose">
+          <Blocks blocks={project.blocks} />
+        </div>
+      </section>
+    )}
+
+    <hr class="project-divider" />
+
+    <section class="project-section" aria-labelledby="releases-h">
+      <header class="ps-head">
+        <h2 id="releases-h" class="section-title">Releases</h2>
+        <span class="section-num mono-chrome">§01</span>
+      </header>
+      <hr />
+      {releasesDesc.length === 0 ? (
+        <p class="empty mono-margin">No releases yet.</p>
+      ) : (
+        <ul class="entry-list">
+          {releasesDesc.map((r) => (
+            <li class="entry-row">
+              <p class="entry-meta mono-chrome">
+                <span class="type-badge type-release">RELEASE</span>
+                <span class="meta-sep" aria-hidden="true">·</span>
+                <span>{r.date}</span>
+              </p>
+              <h3 class="entry-title">
+                <a href={`/projects/${project.slug}/releases/${r.slug}`}>{r.title}</a>
+              </h3>
+              {r.excerpt && <p class="entry-excerpt">{r.excerpt}</p>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+
+    <section class="project-section" aria-labelledby="notes-h">
+      <header class="ps-head">
+        <h2 id="notes-h" class="section-title">Notes</h2>
+        <span class="section-num mono-chrome">§02</span>
+      </header>
+      <hr />
+      {notes.length === 0 ? (
+        <p class="empty mono-margin">No notes yet.</p>
+      ) : (
+        <ul class="entry-list">
+          {notes.map((n) => (
+            <li class="entry-row">
+              <p class="entry-meta mono-chrome">
+                <span class="type-badge type-note">NOTE</span>
+                <span class="meta-sep" aria-hidden="true">·</span>
+                <span>{n.date}</span>
+              </p>
+              <h3 class="entry-title">
+                <a href={`/projects/${project.slug}/notes/${n.slug}`}>{n.title}</a>
+              </h3>
+              {n.excerpt && <p class="entry-excerpt">{n.excerpt}</p>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .project { padding-block: var(--s-6) var(--s-8); }
+
+  .project-header { max-width: var(--measure); margin-bottom: var(--s-5); }
+  .project-kicker {
+    display: flex;
+    gap: var(--s-2);
+    align-items: baseline;
+    flex-wrap: wrap;
+    color: var(--c-ink-muted);
+    margin-bottom: var(--s-3);
+  }
+  .meta-sep { color: var(--c-rule-strong); }
+  .project-title {
+    font-family: var(--font-display);
+    font-size: var(--t-d1);
+    line-height: var(--t-d1-lh);
+    font-weight: var(--w-display-light);
+    font-variation-settings: 'opsz' 60;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    margin-bottom: var(--s-3);
+  }
+  .project-desc {
+    font-family: var(--font-body);
+    font-size: var(--t-body-lg);
+    line-height: 1.5;
+    color: var(--c-ink);
+    font-style: italic;
+    font-variation-settings: 'opsz' 24;
+  }
+
+  .project-divider {
+    background: var(--c-rule);
+    margin-block: var(--s-5);
+  }
+  .project-overview { margin-bottom: var(--s-5); }
+
+  .status-chip {
+    display: inline-block;
+    padding: 0.15rem var(--s-1);
+    border: var(--rule-w) solid var(--c-rule);
+  }
+  .status-active {
+    color: var(--c-accent);
+    border-color: var(--c-accent);
+  }
+
+  .project-section { margin-bottom: var(--s-6); }
+  .ps-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: var(--t-d3);
+    font-weight: var(--w-display);
+    font-variation-settings: 'opsz' 32;
+    margin: 0;
+  }
+  .section-num { color: var(--c-ink-muted); }
+  hr {
+    margin-block: var(--s-2) var(--s-3);
+    background: var(--c-rule);
+  }
+  .empty { padding-block: var(--s-3); }
+
+  .entry-list { list-style: none; padding: 0; margin: 0; }
+  .entry-row {
+    padding-block: var(--s-3);
+    border-bottom: var(--rule-w) solid var(--c-rule);
+  }
+  .entry-row:first-child { padding-top: 0; }
+  .entry-row:last-child { border-bottom: 0; }
+  .entry-meta {
+    display: flex;
+    gap: var(--s-2);
+    color: var(--c-ink-muted);
+    margin-bottom: var(--s-1);
+  }
+  .type-badge { letter-spacing: var(--t-mono-letter); }
+  .type-release { color: var(--c-accent); font-weight: var(--w-mono-strong); }
+
+  .entry-title {
+    font-family: var(--font-display);
+    font-size: var(--t-d4);
+    font-weight: var(--w-display);
+    font-variation-settings: 'opsz' 22;
+    text-wrap: balance;
+    margin: 0 0 var(--s-1) 0;
+  }
+  .entry-title a {
+    color: var(--c-ink);
+    text-decoration: none;
+  }
+  .entry-title a:hover { color: var(--c-accent); }
+  .entry-excerpt {
+    font-family: var(--font-body);
+    font-size: var(--t-body);
+    line-height: 1.5;
+    max-width: var(--measure);
+    color: var(--c-ink);
+  }
+</style>

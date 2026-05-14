@@ -1,0 +1,43 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro'
+---
+<BaseLayout
+  title="404"
+  description="Page not found."
+  documentStripLeft="ERROR · DOCUMENT NOT FOUND"
+>
+  <article class="container nf">
+    <p class="kicker mono-chrome">ERROR 404</p>
+    <h1 class="nf-title">Document not found</h1>
+    <p class="nf-body">
+      The page you are looking for has been moved, renamed, or never existed
+      to begin with. Try the <a href="/">homepage</a>, the <a href="/projects">project
+      index</a>, or the <a href="/search">search</a>.
+    </p>
+  </article>
+</BaseLayout>
+
+<style>
+  .nf {
+    padding-block: var(--s-8) var(--s-9);
+    max-width: var(--measure);
+  }
+  .kicker {
+    color: var(--c-accent);
+    margin-bottom: var(--s-2);
+  }
+  .nf-title {
+    font-family: var(--font-display);
+    font-size: var(--t-d1);
+    line-height: var(--t-d1-lh);
+    font-weight: var(--w-display-light);
+    font-variation-settings: 'opsz' 72;
+    letter-spacing: -0.015em;
+  }
+  .nf-body {
+    margin-top: var(--s-4);
+    font-size: var(--t-body-lg);
+    line-height: 1.5;
+    color: var(--c-ink);
+  }
+</style>

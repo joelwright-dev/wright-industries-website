@@ -1,0 +1,30 @@
+---
+import type { EquationBlock } from '~/lib/content-blocks'
+
+interface Props { block: EquationBlock }
+const { block } = Astro.props
+
+// KaTeX integration lands with the search/RSS task. For now we render the
+// LaTeX source verbatim in a styled box so the math is at least visible —
+// not pretty but not lost.
+---
+<div class="equation" role="math" aria-label="Mathematical expression">
+  <pre class="equation-source">{block.expression}</pre>
+</div>
+
+<style>
+  .equation {
+    margin-block: var(--s-4);
+    padding: var(--s-3);
+    background: var(--c-bg-elev);
+    border-left: var(--rule-w-strong) solid var(--c-rule-strong);
+    overflow-x: auto;
+  }
+  .equation-source {
+    font-family: var(--font-mono);
+    font-size: var(--t-body);
+    line-height: 1.5;
+    margin: 0;
+    white-space: pre;
+  }
+</style>

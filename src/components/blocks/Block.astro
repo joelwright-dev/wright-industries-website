@@ -1,0 +1,39 @@
+---
+// Dispatcher — renders one ContentBlock by switching on `kind`. Recursive
+// containers (list, quote, callout, toggle) embed their own children by
+// recursing through this same component.
+
+import type { ContentBlock } from '~/lib/content-blocks'
+
+import Paragraph from './Paragraph.astro'
+import Heading from './Heading.astro'
+import List from './List.astro'
+import Quote from './Quote.astro'
+import Code from './Code.astro'
+import Callout from './Callout.astro'
+import Toggle from './Toggle.astro'
+import Image from './Image.astro'
+import Divider from './Divider.astro'
+import Bookmark from './Bookmark.astro'
+import Equation from './Equation.astro'
+import Embed from './Embed.astro'
+import Table from './Table.astro'
+import Unknown from './Unknown.astro'
+
+interface Props { block: ContentBlock }
+const { block } = Astro.props
+---
+{block.kind === 'paragraph' && <Paragraph block={block} />}
+{block.kind === 'heading'   && <Heading block={block} />}
+{block.kind === 'list'      && <List block={block} />}
+{block.kind === 'quote'     && <Quote block={block} />}
+{block.kind === 'code'      && <Code block={block} />}
+{block.kind === 'callout'   && <Callout block={block} />}
+{block.kind === 'toggle'    && <Toggle block={block} />}
+{block.kind === 'image'     && <Image block={block} />}
+{block.kind === 'divider'   && <Divider />}
+{block.kind === 'bookmark'  && <Bookmark block={block} />}
+{block.kind === 'equation'  && <Equation block={block} />}
+{block.kind === 'embed'     && <Embed block={block} />}
+{block.kind === 'table'     && <Table block={block} />}
+{block.kind === 'unknown'   && <Unknown block={block} />}

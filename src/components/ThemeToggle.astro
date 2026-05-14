@@ -1,0 +1,58 @@
+---
+// Manual dark-mode toggle. Tiny inline island — no framework, no hydration
+// overhead. The BaseLayout's pre-paint script reads localStorage and applies
+// data-theme before render to prevent FOUC.
+---
+<button
+  type="button"
+  class="theme-toggle mono-chrome"
+  aria-label="Toggle colour scheme"
+  data-theme-toggle
+>
+  <span class="when-light" aria-hidden="true">DARK</span>
+  <span class="when-dark"  aria-hidden="true">LIGHT</span>
+</button>
+
+<script is:inline>
+  (function () {
+    const btn = document.querySelector('[data-theme-toggle]')
+    if (!btn) return
+    btn.addEventListener('click', function () {
+      const root = document.documentElement
+      const current = root.getAttribute('data-theme')
+      // Three states: unset (follow system), 'light', 'dark'. Cycle: unset → opposite-of-system → opposite → unset.
+      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      let next
+      if (!current) next = systemDark ? 'light' : 'dark'
+      else if (current === 'light') next = 'dark'
+      else next = 'light'
+      root.setAttribute('data-theme', next)
+      try { localStorage.setItem('theme', next) } catch (e) {}
+    })
+  })()
+</script>
+
+<style>
+  .theme-toggle {
+    color: var(--c-ink-muted);
+    padding: var(--s-1) var(--s-2);
+    border: var(--rule-w) solid transparent;
+    border-radius: 0;
+    transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+  }
+  .theme-toggle:hover {
+    color: var(--c-accent);
+    border-color: var(--c-rule);
+  }
+  .when-dark { display: none; }
+  :root[data-theme='dark'] .when-light,
+  :root:not([data-theme='light']) .when-light { display: inline; }
+  :root[data-theme='dark'] .when-dark { display: inline; }
+  :root[data-theme='light'] .when-light { display: inline; }
+  :root[data-theme='light'] .when-dark { display: none; }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) .when-light { display: none; }
+    :root:not([data-theme='light']) .when-dark { display: inline; }
+  }
+</style>

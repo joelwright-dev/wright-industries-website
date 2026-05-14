@@ -1,0 +1,49 @@
+---
+import type { EmbedBlock } from '~/lib/content-blocks'
+import { inlineHTML } from '~/lib/inline'
+
+interface Props { block: EmbedBlock }
+const { block } = Astro.props
+
+let hostname = ''
+try {
+  hostname = new URL(block.url).hostname.replace(/^www\./, '')
+} catch (e) {
+  void e
+}
+const captionHTML = inlineHTML(block.caption)
+---
+<figure class="embed">
+  <a class="embed-card" href={block.url} rel="noopener external">
+    <span class="embed-host mono-margin">EMBED · {hostname || 'LINK'}</span>
+    <span class="embed-url">{block.url}</span>
+  </a>
+  {captionHTML.length > 0 && <figcaption set:html={captionHTML} />}
+</figure>
+
+<style>
+  .embed { margin-block: var(--s-4); }
+  .embed-card {
+    display: block;
+    padding: var(--s-3);
+    border: var(--rule-w) solid var(--c-rule);
+    background: var(--c-bg-elev);
+    text-decoration: none;
+    color: var(--c-ink);
+    transition: border-color var(--t-fast) var(--ease);
+  }
+  .embed-card:hover {
+    border-color: var(--c-rule-strong);
+    color: var(--c-accent);
+  }
+  .embed-host {
+    display: block;
+    color: var(--c-ink-muted);
+    margin-bottom: var(--s-1);
+  }
+  .embed-url {
+    font-family: var(--font-mono);
+    font-size: var(--t-mono-caption);
+    word-break: break-all;
+  }
+</style>

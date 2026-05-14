@@ -1,0 +1,53 @@
+---
+import { BUSINESS, footerBusinessName } from '~/config/business'
+---
+<footer class="site-footer">
+  <hr />
+  <div class="container footer-row">
+    <p class="footer-business mono-chrome">
+      <span>{footerBusinessName()}</span>
+      <span class="footer-sep" aria-hidden="true">·</span>
+      <span>{BUSINESS.location}</span>
+      <span class="footer-sep" aria-hidden="true">·</span>
+      <span>ABN {BUSINESS.abn}</span>
+    </p>
+    <nav class="footer-nav mono-chrome" aria-label="Footer">
+      <a href="/projects">PROJECTS</a>
+      <a href="/notes">NOTES</a>
+      <a href="/releases">RELEASES</a>
+      <a href="/about">ABOUT</a>
+      <a href="/contact">CONTACT</a>
+      <a href="/colophon">COLOPHON</a>
+      <a href="/rss.xml">RSS</a>
+    </nav>
+  </div>
+</footer>
+
+<style>
+  .site-footer { margin-top: var(--s-8); }
+  .site-footer hr { background: var(--c-rule); }
+  .footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--s-4);
+    padding-block: var(--s-4) var(--s-5);
+    flex-wrap: wrap;
+    color: var(--c-ink-muted);
+  }
+  .footer-business { display: inline-flex; gap: var(--s-2); flex-wrap: wrap; }
+  .footer-sep { color: var(--c-rule-strong); }
+  .footer-nav {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+  }
+  .footer-nav a {
+    color: var(--c-ink-muted);
+    text-decoration: none;
+    transition: color var(--t-fast) var(--ease);
+  }
+  .footer-nav a:hover, .footer-nav a:focus-visible {
+    color: var(--c-accent);
+  }
+</style>

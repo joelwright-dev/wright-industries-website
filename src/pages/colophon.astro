@@ -1,0 +1,102 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro'
+import '~/styles/prose.css'
+import { SITE } from '~/config/site'
+---
+<BaseLayout
+  title="Colophon"
+  description="How this site is built — typefaces, stack, design references."
+  documentStripLeft="DOCUMENT · COLOPHON"
+>
+  <article class="container page">
+    <header class="page-header">
+      <p class="kicker mono-chrome">COLOPHON</p>
+      <h1 class="page-title">How this site is set</h1>
+      <p class="page-lede">
+        A brief accounting of the typefaces, technology, and references
+        behind the design.
+      </p>
+    </header>
+
+    <hr class="rule" />
+
+    <div class="prose colophon-body">
+      <h2>Typefaces</h2>
+      <p>
+        Body and display are set in <strong>Newsreader</strong>, a serif by
+        <em>Production Type</em> designed for editorial reading on screen, in
+        its variable optical-size form. Newsreader is distributed under the
+        Open Font Licence.
+      </p>
+      <p>
+        Chrome, marginalia, figure captions, and code are set in
+        <strong>IBM Plex Mono</strong>, designed by <em>Bold Monday</em> for
+        IBM. Plex Mono is distributed under the Open Font Licence.
+      </p>
+      <p>
+        Fonts are self-hosted as WOFF2 via <a href="https://fontsource.org">Fontsource</a>.
+        No external font CDNs are loaded.
+      </p>
+
+      <h2>Stack</h2>
+      <ul>
+        <li><strong>Astro</strong> — static site generator with TypeScript in strict mode.</li>
+        <li><strong>Vanilla CSS</strong> with custom-property tokens. No framework, no utility classes.</li>
+        <li><strong>Notion</strong> as the content authoring environment, queried at build time via the official API.</li>
+        <li><strong>Pagefind</strong> for client-side full-text search, indexed at deploy.</li>
+        <li><strong>Vercel</strong> for hosting and deploy hooks.</li>
+        <li><strong>pnpm</strong> for package management.</li>
+      </ul>
+
+      <h2>Design references</h2>
+      <p>
+        The visual language draws on several traditions of mid-century
+        technical publishing:
+      </p>
+      <ul>
+        <li>NASA technical-report design from the Apollo era — cream paper, figure numbering, mixed serif and monospace.</li>
+        <li>The Paul Rand period at IBM — restrained accent colour, strict grid, the precision of Helvetica-era marks.</li>
+        <li>The <em>Bell System Technical Journal</em> — serious serif typography, formal article structure, dense footnotes.</li>
+        <li>Massimo Vignelli's grid systems — ruled lines, deliberate hierarchy, no decoration without purpose.</li>
+      </ul>
+
+      <h2>Source</h2>
+      <p>
+        The repository will be made public alongside the launch of the
+        commerce phase. Until then, anything documented in the notes and
+        releases here is offered freely for reuse.
+      </p>
+
+      <hr />
+
+      <p class="mono-margin colophon-footer">
+        Site &copy; {SITE.established} {SITE.title} · Content licensed under
+        Creative Commons BY 4.0 unless otherwise stated.
+      </p>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .page { padding-block: var(--s-6) var(--s-8); }
+  .page-header { max-width: var(--measure); }
+  .kicker { color: var(--c-ink-muted); margin-bottom: var(--s-2); }
+  .page-title {
+    font-family: var(--font-display);
+    font-size: var(--t-d1);
+    line-height: var(--t-d1-lh);
+    font-weight: var(--w-display-light);
+    font-variation-settings: 'opsz' 60;
+    letter-spacing: -0.01em;
+  }
+  .page-lede {
+    margin-top: var(--s-3);
+    font-size: var(--t-body-lg);
+    font-style: italic;
+    color: var(--c-ink-muted);
+    font-variation-settings: 'opsz' 24;
+  }
+  .rule { margin-block: var(--s-5); background: var(--c-rule); }
+  .colophon-body { max-width: var(--measure); }
+  .colophon-footer { color: var(--c-ink-muted); margin-top: var(--s-3); }
+</style>

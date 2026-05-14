@@ -1,0 +1,32 @@
+---
+import type { CalloutBlock } from '~/lib/content-blocks'
+import { inlineHTML } from '~/lib/inline'
+import Blocks from './Blocks.astro'
+
+interface Props { block: CalloutBlock }
+const { block } = Astro.props
+---
+<aside class="callout">
+  {block.icon && <span class="callout-icon" aria-hidden="true">{block.icon}</span>}
+  <div class="callout-body">
+    <p set:html={inlineHTML(block.runs)} />
+    {block.children.length > 0 && <Blocks blocks={block.children} />}
+  </div>
+</aside>
+
+<style>
+  .callout {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--s-3);
+    padding: var(--s-3);
+    background: var(--c-bg-elev);
+    border-left: var(--rule-w-strong) solid var(--c-rule-strong);
+    margin-block: var(--s-4);
+  }
+  .callout-icon {
+    font-size: 1.25em;
+    line-height: 1.3;
+  }
+  .callout-body > * + * { margin-top: var(--s-2); }
+</style>

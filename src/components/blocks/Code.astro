@@ -1,0 +1,49 @@
+---
+import type { CodeBlock } from '~/lib/content-blocks'
+import { inlineHTML } from '~/lib/inline'
+
+interface Props { block: CodeBlock }
+const { block } = Astro.props
+
+const captionHTML = inlineHTML(block.caption)
+---
+<figure class="code-block">
+  <div class="code-frame">
+    {block.language && (
+      <div class="code-lang mono-caption" aria-hidden="true">{block.language}</div>
+    )}
+    <pre><code>{block.code}</code></pre>
+  </div>
+  {captionHTML.length > 0 && (
+    <figcaption set:html={captionHTML} />
+  )}
+</figure>
+
+<style>
+  .code-block { margin-block: var(--s-4); }
+  .code-frame {
+    position: relative;
+    border: var(--rule-w) solid var(--c-rule);
+    background: var(--c-bg-elev);
+  }
+  .code-lang {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: var(--c-bg);
+    color: var(--c-ink-muted);
+    padding: 0.1rem var(--s-2);
+    border-left: var(--rule-w) solid var(--c-rule);
+    border-bottom: var(--rule-w) solid var(--c-rule);
+    text-transform: uppercase;
+    letter-spacing: var(--t-mono-letter);
+  }
+  pre {
+    margin: 0;
+    padding: var(--s-3);
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: var(--t-mono-caption);
+    line-height: var(--t-mono-caption-lh);
+  }
+</style>

@@ -1,0 +1,21 @@
+---
+import type { HeadingBlock } from '~/lib/content-blocks'
+import { inlineHTML, inlineText } from '~/lib/inline'
+
+interface Props { block: HeadingBlock }
+const { block } = Astro.props
+
+// Anchor id from heading text — for in-page links.
+const id = inlineText(block.runs)
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-+|-+$/g, '')
+
+const html = inlineHTML(block.runs)
+---
+{block.level === 1 && <h2 id={id} set:html={html} />}
+{block.level === 2 && <h2 id={id} set:html={html} />}
+{block.level === 3 && <h3 id={id} set:html={html} />}
+
+<!-- Notion heading_1 is treated as a section heading (page level h2 in our
+     structure since the page title is h1). -->

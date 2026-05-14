@@ -1,0 +1,102 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro'
+import { source } from '~/lib/source'
+
+const all = await source.listAllEntries()
+const releases = all
+  .filter((e) => e.type === 'release')
+  .sort((a, b) => b.date.localeCompare(a.date))
+---
+<BaseLayout title="Releases" documentStripLeft="INDEX · RELEASES · ALL PROJECTS">
+  <div class="container page">
+    <header class="page-header">
+      <p class="page-kicker mono-chrome">INDEX</p>
+      <h1 class="page-title">Releases</h1>
+      <p class="page-lede">
+        Milestone write-ups — longer, more refined, intended to stand on their
+        own. The synthesised view of work that the notes track day-to-day.
+      </p>
+    </header>
+
+    <hr class="page-divider" />
+
+    {releases.length === 0 ? (
+      <p class="empty mono-margin">No releases yet.</p>
+    ) : (
+      <ol class="feed">
+        {releases.map((r) => (
+          <li class="feed-row">
+            <p class="feed-meta mono-chrome">
+              <span class="type-badge type-release">RELEASE</span>
+              <span class="meta-sep" aria-hidden="true">·</span>
+              <span>{r.projectSlug.toUpperCase()}</span>
+              <span class="meta-sep" aria-hidden="true">·</span>
+              <span>{r.date}</span>
+            </p>
+            <h2 class="feed-title">
+              <a href={`/projects/${r.projectSlug}/releases/${r.slug}`}>{r.title}</a>
+            </h2>
+            {r.excerpt && <p class="feed-excerpt">{r.excerpt}</p>}
+          </li>
+        ))}
+      </ol>
+    )}
+  </div>
+</BaseLayout>
+
+<style>
+  .page { padding-block: var(--s-6) var(--s-8); }
+  .page-header { max-width: var(--measure); }
+  .page-kicker { color: var(--c-ink-muted); margin-bottom: var(--s-2); }
+  .page-title {
+    font-family: var(--font-display);
+    font-size: var(--t-d1);
+    line-height: var(--t-d1-lh);
+    font-weight: var(--w-display-light);
+    font-variation-settings: 'opsz' 60;
+    letter-spacing: -0.01em;
+  }
+  .page-lede {
+    margin-top: var(--s-3);
+    font-size: var(--t-body-lg);
+    font-style: italic;
+    color: var(--c-ink-muted);
+    font-variation-settings: 'opsz' 24;
+  }
+  .page-divider { margin-block: var(--s-5); background: var(--c-rule); }
+  .empty { padding-block: var(--s-4); color: var(--c-ink-muted); }
+
+  .feed { list-style: none; padding: 0; margin: 0; }
+  .feed-row {
+    padding-block: var(--s-4);
+    border-bottom: var(--rule-w) solid var(--c-rule);
+  }
+  .feed-row:first-child { padding-top: 0; }
+  .feed-row:last-child { border-bottom: 0; }
+  .feed-meta {
+    display: flex;
+    gap: var(--s-2);
+    color: var(--c-ink-muted);
+    margin-bottom: var(--s-2);
+  }
+  .meta-sep { color: var(--c-rule-strong); }
+  .type-badge { letter-spacing: var(--t-mono-letter); }
+  .type-release { color: var(--c-accent); font-weight: var(--w-mono-strong); }
+
+  .feed-title {
+    font-family: var(--font-display);
+    font-size: var(--t-d3);
+    font-weight: var(--w-display);
+    font-variation-settings: 'opsz' 32;
+    text-wrap: balance;
+    margin: 0 0 var(--s-2) 0;
+  }
+  .feed-title a { color: var(--c-ink); text-decoration: none; }
+  .feed-title a:hover { color: var(--c-accent); }
+  .feed-excerpt {
+    font-size: var(--t-body);
+    line-height: 1.5;
+    color: var(--c-ink);
+    max-width: var(--measure);
+  }
+</style>

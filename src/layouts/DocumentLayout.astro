@@ -1,0 +1,179 @@
+---
+import BaseLayout from './BaseLayout.astro'
+import '~/styles/prose.css'
+
+import type { EntryMeta, ProjectMeta } from '~/lib/sources/ContentSource'
+
+interface Props {
+  entry: EntryMeta
+  project: ProjectMeta
+  estReadMinutes?: number
+  jsonLD?: readonly object[]
+}
+
+const { entry, project, estReadMinutes } = Astro.props
+const jsonLD = Astro.props.jsonLD ?? []
+
+const docNum = (entry.docNumberOverride ?? entry.docNumber).toString().padStart(4, '0')
+const projectCode = project.slug.toUpperCase()
+const typeLabel = entry.type.toUpperCase()
+const stripLeft = `DOCUMENT ${docNum} · ${projectCode} · ${typeLabel} · ${entry.date}`
+---
+<BaseLayout
+  title={entry.title}
+  description={entry.excerpt}
+  documentStripLeft={stripLeft}
+  documentStripRight="PAGE 1/1"
+  jsonLD={jsonLD}
+>
+  <article class="container document" data-pagefind-body>
+    <div class="doc-grid">
+      <aside class="marginalia mono-margin" aria-label="Document metadata">
+        <div class="margin-block">
+          <div class="margin-label">DATE</div>
+          <div class="margin-value">{entry.date}</div>
+        </div>
+        <div class="margin-block">
+          <div class="margin-label">DOCUMENT</div>
+          <div class="margin-value">DOC {docNum}</div>
+        </div>
+        <div class="margin-block">
+          <div class="margin-label">PROJECT</div>
+          <div class="margin-value">
+            <a href={`/projects/${project.slug}`}>→ {project.title}</a>
+          </div>
+        </div>
+        {entry.tags.length > 0 && (
+          <div class="margin-block">
+            <div class="margin-label">TAGS</div>
+            <ul class="margin-tags margin-value">
+              {entry.tags.map(t => <li>#{t}</li>)}
+            </ul>
+          </div>
+        )}
+        {estReadMinutes !== undefined && (
+          <div class="margin-block">
+            <div class="margin-label">EST READ</div>
+            <div class="margin-value">{estReadMinutes} min</div>
+          </div>
+        )}
+      </aside>
+
+      <div class="doc-main">
+        <header class="doc-header">
+          <p class="doc-kicker mono-chrome">
+            <span>{typeLabel}</span>
+            <span class="meta-sep" aria-hidden="true">·</span>
+            <span>{project.title}</span>
+          </p>
+          <h1 class="doc-title">{entry.title}</h1>
+        </header>
+
+        <div class="prose">
+          <slot />
+        </div>
+
+        <hr class="doc-end" />
+        <nav class="doc-nav mono-chrome" aria-label="Document navigation">
+          <a href={`/projects/${project.slug}`}>← All entries in {project.title}</a>
+        </nav>
+      </div>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .document {
+    padding-block: var(--s-6) var(--s-8);
+  }
+
+  .doc-grid {
+    display: grid;
+    grid-template-columns: var(--marginalia-width) minmax(0, 1fr);
+    gap: var(--s-6);
+    align-items: start;
+  }
+
+  @media (max-width: 900px) {
+    .doc-grid {
+      grid-template-columns: 1fr;
+      gap: var(--s-4);
+    }
+    .marginalia {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+      gap: var(--s-3) var(--s-4);
+      padding-bottom: var(--s-3);
+      border-bottom: var(--rule-w) solid var(--c-rule);
+      position: static;
+    }
+    .margin-block { margin-bottom: 0; }
+  }
+
+  .marginalia {
+    position: sticky;
+    top: var(--s-3);
+  }
+
+  .margin-block {
+    margin-bottom: var(--s-3);
+  }
+  .margin-label {
+    color: var(--c-rule-strong);
+    margin-bottom: 0.15rem;
+  }
+  .margin-value {
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--c-ink-muted);
+  }
+  .margin-tags {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .margin-tags li { /* one tag per line, mono small */ }
+  .marginalia a {
+    color: var(--c-ink-muted);
+    text-decoration: none;
+  }
+  .marginalia a:hover { color: var(--c-accent); }
+
+  .doc-header {
+    margin-bottom: var(--s-5);
+    padding-bottom: var(--s-3);
+    border-bottom: var(--rule-w) solid var(--c-rule);
+    max-width: var(--measure);
+  }
+  .doc-kicker {
+    display: flex;
+    gap: var(--s-2);
+    flex-wrap: wrap;
+    color: var(--c-ink-muted);
+    margin-bottom: var(--s-2);
+  }
+  .meta-sep { color: var(--c-rule-strong); }
+  .doc-title {
+    font-family: var(--font-display);
+    font-size: var(--t-d1);
+    line-height: var(--t-d1-lh);
+    font-weight: var(--w-display-light);
+    font-variation-settings: 'opsz' 60;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+
+  .doc-end {
+    margin-top: var(--s-6);
+    background: var(--c-rule);
+  }
+  .doc-nav {
+    margin-top: var(--s-3);
+    color: var(--c-ink-muted);
+  }
+  .doc-nav a {
+    color: var(--c-ink-secondary);
+    text-decoration: none;
+  }
+  .doc-nav a:hover { color: var(--c-accent); }
+</style>

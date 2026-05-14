@@ -1,0 +1,114 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro'
+---
+<BaseLayout
+  title="Search"
+  description="Search across all Wright Industries notes, releases, and projects."
+  documentStripLeft="DOCUMENT · SEARCH"
+>
+  <article class="container page">
+    <header class="page-header">
+      <p class="kicker mono-chrome">SEARCH</p>
+      <h1 class="page-title">Search</h1>
+      <p class="page-lede">
+        Full-text search across every note, release, and project page. Built
+        at deploy time with <a href="https://pagefind.app">Pagefind</a>, runs
+        entirely client-side, no tracking.
+      </p>
+    </header>
+
+    <hr class="rule" />
+
+    <div id="search-mount" class="search-mount"></div>
+    <noscript>
+      <p class="mono-margin search-noscript">
+        Search requires JavaScript. The full archive is also browsable via the
+        <a href="/notes">notes</a> and <a href="/releases">releases</a>
+        indexes, or by <a href="/projects">project</a>.
+      </p>
+    </noscript>
+  </article>
+
+  <link
+    rel="stylesheet"
+    href="/pagefind/pagefind-ui.css"
+    onerror="this.dataset.failed = '1'"
+  />
+  <script is:inline>
+    (async function () {
+      const mount = document.getElementById('search-mount')
+      if (!mount) return
+      try {
+        const mod = await import('/pagefind/pagefind-ui.js')
+        new mod.PagefindUI({
+          element: '#search-mount',
+          showSubResults: true,
+          showImages: false,
+          resetStyles: false,
+          autofocus: true,
+          translations: {
+            placeholder: 'Search notes, releases, projects…',
+            clear_search: 'Clear',
+            load_more: 'Load more results',
+            search_label: 'Search Wright Industries',
+            zero_results: 'No results for [SEARCH_TERM].',
+            many_results: '[COUNT] results for [SEARCH_TERM].',
+            one_result: '[COUNT] result for [SEARCH_TERM].',
+          },
+        })
+      } catch (err) {
+        console.warn('[pagefind] index not loaded:', err)
+        mount.innerHTML =
+          '<p class="search-unbuilt mono-margin">The search index has not been built yet. Run <code>pnpm build &amp;&amp; pnpm preview</code> to enable search locally.</p>'
+      }
+    })()
+  </script>
+</BaseLayout>
+
+<style>
+  .page { padding-block: var(--s-6) var(--s-8); }
+  .page-header { max-width: var(--measure); }
+  .kicker { color: var(--c-ink-muted); margin-bottom: var(--s-2); }
+  .page-title {
+    font-family: var(--font-display);
+    font-size: var(--t-d1);
+    line-height: var(--t-d1-lh);
+    font-weight: var(--w-display-light);
+    font-variation-settings: 'opsz' 60;
+    letter-spacing: -0.01em;
+  }
+  .page-lede {
+    margin-top: var(--s-3);
+    font-size: var(--t-body-lg);
+    font-style: italic;
+    color: var(--c-ink-muted);
+    font-variation-settings: 'opsz' 24;
+  }
+  .rule { margin-block: var(--s-5); background: var(--c-rule); }
+
+  .search-mount {
+    max-width: var(--measure);
+  }
+  .search-noscript {
+    margin-top: var(--s-4);
+    color: var(--c-ink-muted);
+  }
+</style>
+
+<style is:global>
+  /* Theme the Pagefind default UI. Variables documented at
+   * https://pagefind.app/docs/ui-usage/#styling */
+  :root {
+    --pagefind-ui-scale: 1;
+    --pagefind-ui-primary: var(--c-ink);
+    --pagefind-ui-text: var(--c-ink);
+    --pagefind-ui-background: var(--c-bg-elev);
+    --pagefind-ui-border: var(--c-rule);
+    --pagefind-ui-tag: var(--c-bg-elev);
+    --pagefind-ui-border-width: var(--rule-w);
+    --pagefind-ui-border-radius: 0;
+    --pagefind-ui-image-border-radius: 0;
+    --pagefind-ui-image-box-ratio: 16 / 9;
+    --pagefind-ui-font: var(--font-body);
+  }
+</style>

@@ -1,0 +1,166 @@
+/* Base styles — modern reset + element defaults + a handful of utility
+ * classes for the typographic primitives that recur across the site. */
+
+@import '@fontsource-variable/newsreader/opsz.css';
+@import '@fontsource-variable/newsreader/opsz-italic.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+
+/* ─── Reset ─────────────────────────────────────────────────────────── */
+
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100dvh;
+  font-family: var(--font-body);
+  font-size: var(--t-body);
+  line-height: var(--t-body-lh);
+  font-weight: var(--w-body);
+  color: var(--c-ink);
+  background: var(--c-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
+  font-variant-numeric: oldstyle-nums proportional-nums;
+}
+
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+input, button, textarea, select { font: inherit; color: inherit; }
+
+button {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+p, h1, h2, h3, h4, h5, h6 {
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+a {
+  color: var(--c-ink-secondary);
+  text-underline-offset: 0.15em;
+  text-decoration-thickness: 0.06em;
+  transition: color var(--t-fast) var(--ease);
+}
+a:hover, a:focus-visible {
+  color: var(--c-accent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--c-accent);
+  color: var(--c-bg);
+}
+
+/* ─── Heading defaults ──────────────────────────────────────────────── */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: var(--w-display);
+  line-height: 1.15;
+  color: var(--c-ink);
+  text-wrap: balance;
+  font-variation-settings: 'opsz' 32;
+}
+
+h1 { font-size: var(--t-d2); line-height: var(--t-d2-lh); font-variation-settings: 'opsz' 60; }
+h2 { font-size: var(--t-d3); line-height: var(--t-d3-lh); font-variation-settings: 'opsz' 36; }
+h3 { font-size: var(--t-d4); line-height: var(--t-d4-lh); font-variation-settings: 'opsz' 24; }
+h4 { font-size: var(--t-d5); line-height: var(--t-d5-lh); font-variation-settings: 'opsz' 18; }
+
+hr {
+  height: var(--rule-w);
+  background: var(--c-rule);
+  border: 0;
+  margin: 0;
+}
+
+/* ─── Mono utility classes ──────────────────────────────────────────── */
+
+.mono-chrome {
+  font-family: var(--font-mono);
+  font-size: var(--t-mono-chrome);
+  line-height: var(--t-mono-chrome-lh);
+  letter-spacing: var(--t-mono-letter);
+  text-transform: uppercase;
+  font-weight: var(--w-mono);
+}
+
+.mono-margin {
+  font-family: var(--font-mono);
+  font-size: var(--t-mono-margin);
+  line-height: var(--t-mono-margin-lh);
+  letter-spacing: var(--t-mono-letter);
+  color: var(--c-ink-muted);
+  text-transform: uppercase;
+  font-weight: var(--w-mono);
+}
+
+.mono-caption {
+  font-family: var(--font-mono);
+  font-size: var(--t-mono-caption);
+  line-height: var(--t-mono-caption-lh);
+  letter-spacing: var(--t-mono-letter);
+  color: var(--c-ink-muted);
+  font-weight: var(--w-mono);
+}
+
+/* ─── Layout primitives ─────────────────────────────────────────────── */
+
+.container {
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--container-pad);
+}
+
+@media (min-width: 800px) {
+  .container { padding-inline: var(--container-pad-md); }
+}
+
+.skip-link {
+  position: absolute;
+  top: -10rem;
+  left: 0;
+  background: var(--c-ink);
+  color: var(--c-bg);
+  padding: var(--s-2) var(--s-3);
+  text-decoration: none;
+  font-family: var(--font-mono);
+  font-size: var(--t-mono-chrome);
+  text-transform: uppercase;
+  letter-spacing: var(--t-mono-letter);
+  z-index: 100;
+}
+.skip-link:focus {
+  top: 0;
+}
+
+/* ─── Type-style helpers (used by display headings outside element flow) */
+
+.display-1 {
+  font-family: var(--font-display);
+  font-size: var(--t-d1);
+  line-height: var(--t-d1-lh);
+  font-weight: var(--w-display-light);
+  font-variation-settings: 'opsz' 72;
+  letter-spacing: -0.015em;
+  color: var(--c-ink);
+}

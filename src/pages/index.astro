@@ -1,0 +1,51 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro'
+import HomeFeaturedRelease from '~/components/HomeFeaturedRelease.astro'
+import HomeActiveProjects from '~/components/HomeActiveProjects.astro'
+import HomeActivityFeed from '~/components/HomeActivityFeed.astro'
+
+import { source } from '~/lib/source'
+import { organizationSchema } from '~/lib/schema'
+import { SITE } from '~/config/site'
+
+const projects = await source.listProjects()
+const allEntries = await source.listAllEntries()
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? SITE.url
+
+const recent = [...allEntries].sort((a, b) => b.date.localeCompare(a.date))
+const releases = recent.filter((e) => e.type === 'release')
+// Featured: explicit Notion `Featured` flag, falling back to most-recent
+// release. Null when no release exists at all — section is then hidden.
+const featured = releases.find((e) => e.featured) ?? releases[0] ?? null
+const activity = recent.slice(0, 15)
+---
+<BaseLayout largeWordmark jsonLD={[organizationSchema(siteUrl)]}>
+  {featured && <HomeFeaturedRelease release={featured} sectionNumber="§01" />}
+  {featured && <hr class="container section-divider" />}
+
+  <div class="container home-split">
+    <HomeActiveProjects projects={projects} sectionNumber={featured ? '§02' : '§01'} />
+    <HomeActivityFeed items={activity} sectionNumber={featured ? '§03' : '§02'} />
+  </div>
+</BaseLayout>
+
+<style>
+  .section-divider {
+    background: var(--c-rule);
+    height: var(--rule-w);
+    margin-block: 0;
+  }
+  .home-split {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: var(--s-6);
+    padding-block: var(--s-6);
+    align-items: start;
+  }
+  @media (max-width: 800px) {
+    .home-split {
+      grid-template-columns: 1fr;
+      gap: var(--s-5);
+    }
+  }
+</style>

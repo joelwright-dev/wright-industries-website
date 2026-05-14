@@ -1,0 +1,41 @@
+---
+import type { ImageBlock } from '~/lib/content-blocks'
+import { inlineHTML, inlineText } from '~/lib/inline'
+
+interface Props { block: ImageBlock }
+const { block } = Astro.props
+
+const captionText = inlineText(block.caption)
+const captionHTML = inlineHTML(block.caption)
+// Caption may start with "Figure N:" — when figureNumber is present, we
+// render it as a structured "Fig. N · …" prefix in mono, then the rest of
+// the caption text in mono as well. The figureNumber comes from the
+// numberFigures pass in blocks.ts.
+const figLabel = block.figureNumber ? `Fig. ${block.figureNumber}` : null
+const alt = block.alt.length > 0 ? block.alt : captionText
+---
+<figure class="figure">
+  <img src={block.src} alt={alt} loading="lazy" decoding="async" />
+  {(figLabel || captionHTML.length > 0) && (
+    <figcaption>
+      {figLabel && <span class="fig-label">{figLabel}</span>}
+      {figLabel && captionHTML.length > 0 && <span class="fig-sep" aria-hidden="true"> · </span>}
+      <span set:html={captionHTML} />
+    </figcaption>
+  )}
+</figure>
+
+<style>
+  .figure { margin-block: var(--s-5); }
+  .figure img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border: var(--rule-w) solid var(--c-rule);
+  }
+  .fig-label {
+    font-weight: var(--w-mono-strong);
+    color: var(--c-ink-muted);
+  }
+  .fig-sep { color: var(--c-rule-strong); }
+</style>

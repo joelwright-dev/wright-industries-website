@@ -1,0 +1,135 @@
+---
+import type { EntryMeta } from '~/lib/sources/ContentSource'
+
+interface Props {
+  items: readonly EntryMeta[]
+  sectionNumber?: string
+}
+
+const { items, sectionNumber = '§03' } = Astro.props
+
+function entryUrl(e: EntryMeta): string {
+  const segment = e.type === 'release' ? 'releases' : 'notes'
+  return `/projects/${e.projectSlug}/${segment}/${e.slug}`
+}
+
+function projectCode(slug: string): string {
+  return slug.toUpperCase()
+}
+---
+<section class="activity-feed" aria-labelledby="activity-h">
+  <header class="af-head">
+    <h2 id="activity-h" class="section-title">Latest activity</h2>
+    <span class="section-num mono-chrome">{sectionNumber}</span>
+  </header>
+  <hr />
+  <ol class="feed-list">
+    {items.map((e) => (
+      <li class="feed-row">
+        <p class="feed-meta mono-chrome">
+          <span class={`type-badge type-${e.type}`}>{e.type.toUpperCase()}</span>
+          <span class="meta-sep" aria-hidden="true">·</span>
+          <span class="feed-project">{projectCode(e.projectSlug)}</span>
+          <span class="meta-sep" aria-hidden="true">·</span>
+          <span>{e.date}</span>
+        </p>
+        <h3 class="feed-title">
+          <a href={entryUrl(e)}>{e.title}</a>
+        </h3>
+        {e.excerpt && <p class="feed-excerpt">{e.excerpt}</p>}
+      </li>
+    ))}
+  </ol>
+  <p class="feed-tail mono-chrome">
+    <a href="/notes">→ All notes</a>
+    <span class="meta-sep" aria-hidden="true">·</span>
+    <a href="/releases">→ All releases</a>
+  </p>
+</section>
+
+<style>
+  .af-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: var(--s-2);
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: var(--t-d3);
+    font-weight: var(--w-display);
+    font-variation-settings: 'opsz' 32;
+    margin: 0;
+  }
+  .section-num { color: var(--c-ink-muted); }
+  hr {
+    margin-block: var(--s-2) var(--s-3);
+    background: var(--c-rule);
+  }
+  .feed-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .feed-row {
+    padding-block: var(--s-3);
+    border-bottom: var(--rule-w) solid var(--c-rule);
+  }
+  .feed-row:first-child { padding-top: 0; }
+  .feed-row:last-child { border-bottom: 0; }
+
+  .feed-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+    color: var(--c-ink-muted);
+    margin-bottom: var(--s-1);
+  }
+  .meta-sep { color: var(--c-rule-strong); }
+
+  .type-badge {
+    color: var(--c-ink-muted);
+    letter-spacing: var(--t-mono-letter);
+  }
+  .type-release { color: var(--c-accent); font-weight: var(--w-mono-strong); }
+
+  .feed-project {
+    color: var(--c-ink-muted);
+  }
+
+  .feed-title {
+    font-family: var(--font-display);
+    font-size: var(--t-d4);
+    line-height: var(--t-d4-lh);
+    font-weight: var(--w-display);
+    font-variation-settings: 'opsz' 22;
+    text-wrap: balance;
+    margin: 0 0 var(--s-1) 0;
+  }
+  .feed-title a {
+    color: var(--c-ink);
+    text-decoration: none;
+  }
+  .feed-title a:hover, .feed-title a:focus-visible {
+    color: var(--c-accent);
+  }
+  .feed-excerpt {
+    font-family: var(--font-body);
+    font-size: var(--t-body);
+    line-height: 1.5;
+    color: var(--c-ink);
+    max-width: var(--measure);
+  }
+
+  .feed-tail {
+    margin-top: var(--s-3);
+    display: flex;
+    gap: var(--s-3);
+    color: var(--c-ink-muted);
+  }
+  .feed-tail a {
+    color: var(--c-ink-secondary);
+    text-decoration: none;
+  }
+  .feed-tail a:hover, .feed-tail a:focus-visible { color: var(--c-accent); }
+</style>

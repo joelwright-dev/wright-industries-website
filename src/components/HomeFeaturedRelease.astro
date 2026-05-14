@@ -1,0 +1,157 @@
+---
+import type { EntryMeta } from '~/lib/sources/ContentSource'
+
+interface Props {
+  release: EntryMeta
+  sectionNumber?: string
+}
+
+const { release, sectionNumber = '§01' } = Astro.props
+const docNum = (release.docNumberOverride ?? release.docNumber).toString().padStart(4, '0')
+const projectCode = release.projectSlug.toUpperCase()
+const url = `/projects/${release.projectSlug}/releases/${release.slug}`
+---
+<section class="featured" aria-labelledby="featured-h">
+  <div class="container">
+    <header class="featured-head">
+      <h2 id="featured-h" class="section-title">Featured release</h2>
+      <span class="section-num mono-chrome">{sectionNumber}</span>
+    </header>
+    <hr />
+    <p class="featured-meta mono-chrome">
+      <span>REL-{docNum}</span>
+      <span class="meta-sep" aria-hidden="true">·</span>
+      <span>{projectCode}</span>
+      <span class="meta-sep" aria-hidden="true">·</span>
+      <span>{release.date}</span>
+    </p>
+
+    <div class="featured-grid">
+      <a href={url} class="cover-link" aria-label={`Read: ${release.title}`}>
+        {release.coverUrl ? (
+          <img
+            class="cover-img"
+            src={release.coverUrl}
+            alt={`Cover image for ${release.title}`}
+            loading="eager"
+            decoding="async"
+          />
+        ) : (
+          <div class="cover-placeholder" aria-hidden="true">
+            <span class="cover-label mono-margin">COVER 16:9</span>
+          </div>
+        )}
+      </a>
+
+      <div class="featured-body">
+        <h3 class="featured-title">
+          <a href={url}>{release.title}</a>
+        </h3>
+        <p class="featured-excerpt">{release.excerpt}</p>
+        <p class="featured-read">
+          <a href={url}>→ Read release</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .featured { padding-block: var(--s-6); }
+  .featured-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: var(--s-2);
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: var(--t-d3);
+    font-weight: var(--w-display);
+    font-variation-settings: 'opsz' 32;
+    text-transform: none;
+    margin: 0;
+  }
+  .section-num {
+    color: var(--c-ink-muted);
+  }
+  hr {
+    margin-block: var(--s-2) var(--s-3);
+    background: var(--c-rule);
+  }
+  .featured-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+    color: var(--c-ink-muted);
+    margin-bottom: var(--s-4);
+  }
+  .meta-sep { color: var(--c-rule-strong); }
+
+  .featured-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: var(--s-5);
+    align-items: start;
+  }
+  @media (max-width: 800px) {
+    .featured-grid { grid-template-columns: 1fr; gap: var(--s-4); }
+  }
+
+  .cover-link { display: block; text-decoration: none; }
+  .cover-img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border: var(--rule-w) solid var(--c-rule);
+    display: block;
+  }
+  .cover-placeholder {
+    aspect-ratio: 16 / 9;
+    border: var(--rule-w) solid var(--c-rule);
+    background:
+      repeating-linear-gradient(135deg, transparent 0 14px, var(--c-rule) 14px 15px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cover-label {
+    background: var(--c-bg);
+    padding: var(--s-1) var(--s-2);
+    color: var(--c-ink-muted);
+  }
+
+  .featured-title {
+    font-family: var(--font-display);
+    font-size: var(--t-d2);
+    line-height: var(--t-d2-lh);
+    font-weight: var(--w-display);
+    font-variation-settings: 'opsz' 48;
+    text-wrap: balance;
+    margin-bottom: var(--s-3);
+  }
+  .featured-title a {
+    color: var(--c-ink);
+    text-decoration: none;
+  }
+  .featured-title a:hover, .featured-title a:focus-visible {
+    color: var(--c-accent);
+  }
+  .featured-excerpt {
+    font-family: var(--font-body);
+    font-size: var(--t-body-lg);
+    line-height: 1.5;
+    max-width: var(--measure);
+    color: var(--c-ink);
+    margin-bottom: var(--s-3);
+  }
+  .featured-read a {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: var(--t-body);
+    color: var(--c-ink-secondary);
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+  }
+  .featured-read a:hover { color: var(--c-accent); }
+</style>

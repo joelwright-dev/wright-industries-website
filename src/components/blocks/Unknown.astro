@@ -1,0 +1,25 @@
+---
+import type { UnknownBlock } from '~/lib/content-blocks'
+
+interface Props { block: UnknownBlock }
+const { block } = Astro.props
+---
+<aside class="unknown-block mono-margin" role="note">
+  Unsupported Notion block: <code>{block.notionType}</code>
+</aside>
+
+<style>
+  .unknown-block {
+    margin-block: var(--s-3);
+    padding: var(--s-2) var(--s-3);
+    background: var(--c-bg-elev);
+    border: var(--rule-w) dashed var(--c-rule-strong);
+    color: var(--c-ink-muted);
+  }
+  .unknown-block code {
+    font-family: var(--font-mono);
+    padding: 0 0.25rem;
+    background: var(--c-bg);
+    border: var(--rule-w) solid var(--c-rule);
+  }
+</style>

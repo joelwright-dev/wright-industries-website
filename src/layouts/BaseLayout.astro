@@ -1,0 +1,103 @@
+---
+import '~/styles/tokens.css'
+import '~/styles/base.css'
+
+import SkipLink from '~/components/SkipLink.astro'
+import DocumentStrip from '~/components/DocumentStrip.astro'
+import Masthead from '~/components/Masthead.astro'
+import Footer from '~/components/Footer.astro'
+
+import { SITE } from '~/config/site'
+import { formatIso } from '~/lib/dates'
+
+interface Props {
+  /** Page title — concatenated with the site name. Null renders the bare site name. */
+  title?: string | null
+  /** Page description for <meta> and OG tags. Null falls back to the site description. */
+  description?: string | null
+  /** Render the wordmark large (home, about). Default: compact. */
+  largeWordmark?: boolean
+  /** Document strip left-side text. Defaults to the homepage form. */
+  documentStripLeft?: string
+  /** Document strip right-side text. Defaults to today's ISO date. */
+  documentStripRight?: string
+  /** Canonical URL override. Defaults to the current Astro.url. */
+  canonical?: string
+  /** JSON-LD schema objects to inject into <head>. */
+  jsonLD?: readonly object[]
+}
+
+const props = Astro.props
+const title = props.title
+const description = props.description ?? SITE.description
+const largeWordmark = props.largeWordmark ?? false
+const documentStripLeft =
+  props.documentStripLeft ??
+  `WRIGHT INDUSTRIES · ${SITE.location.toUpperCase()} · EST. ${SITE.established} · DOCUMENT INDEX`
+const documentStripRight = props.documentStripRight ?? formatIso(new Date())
+const canonical = props.canonical
+const jsonLD = props.jsonLD ?? []
+
+const fullTitle = title ? `${title} · ${SITE.title}` : SITE.title
+const canonicalUrl = canonical ?? Astro.url.toString()
+---
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <title>{fullTitle}</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:site_name" content={SITE.title} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" type="application/rss+xml" title={`${SITE.title} · RSS`} href="/rss.xml" />
+    <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
+    <meta name="theme-color" content="#F2EDE0" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1A1612" media="(prefers-color-scheme: dark)" />
+    {jsonLD.map((obj) => (
+      <script
+        type="application/ld+json"
+        set:html={JSON.stringify(obj).replace(/</g, '\\u003c')}
+      />
+    ))}
+    <script is:inline>
+      (function () {
+        try {
+          var t = localStorage.getItem('theme')
+          if (t === 'dark' || t === 'light') {
+            document.documentElement.setAttribute('data-theme', t)
+          }
+        } catch (e) {}
+      })()
+    </script>
+    <script is:inline>
+      // ⌘K / Ctrl+K → navigate to /search. Real modal can replace this later.
+      document.addEventListener('keydown', function (e) {
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+          if (location.pathname !== '/search') {
+            e.preventDefault()
+            location.href = '/search'
+          }
+        }
+      })
+    </script>
+  </head>
+  <body>
+    <SkipLink />
+    <DocumentStrip>
+      <Fragment slot="left">{documentStripLeft}</Fragment>
+      <Fragment slot="right">{documentStripRight}</Fragment>
+    </DocumentStrip>
+    <Masthead large={largeWordmark} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>
