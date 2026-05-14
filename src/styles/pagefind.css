@@ -1,0 +1,236 @@
+/* Theme overrides for Pagefind's Default UI to match the site's aesthetic.
+ * Targets the official class names from https://pagefind.app/docs/ui-styling/
+ *
+ * Pagefind's stylesheet is loaded at runtime (link tag injected when the
+ * modal first opens), so it cascades after our base.css. Selectors here use
+ * !important where the Pagefind defaults are specific enough to win on a
+ * straight tie — this is the cleanest way to overrule a third-party
+ * stylesheet whose load order we don't fully control. */
+
+:root {
+  --pagefind-ui-scale: 0.95;
+  --pagefind-ui-primary: var(--c-ink);
+  --pagefind-ui-text: var(--c-ink);
+  --pagefind-ui-background: var(--c-bg-elev);
+  --pagefind-ui-border: var(--c-rule);
+  --pagefind-ui-tag: var(--c-bg-elev);
+  --pagefind-ui-border-width: var(--rule-w);
+  --pagefind-ui-border-radius: 0;
+  --pagefind-ui-image-border-radius: 0;
+  --pagefind-ui-image-box-ratio: 16 / 9;
+  --pagefind-ui-font: var(--font-body);
+}
+
+.pagefind-ui {
+  font-family: var(--font-body);
+  color: var(--c-ink);
+}
+
+/* ─── Search form ─────────────────────────────────────────────────── */
+
+.pagefind-ui__form {
+  position: relative;
+}
+
+.pagefind-ui__search-input {
+  font-family: var(--font-body) !important;
+  font-size: var(--t-body-lg) !important;
+  font-weight: var(--w-body) !important;
+  font-variation-settings: 'opsz' 20;
+  line-height: 1.4 !important;
+  background: var(--c-bg-elev) !important;
+  border: var(--rule-w-strong) solid var(--c-rule) !important;
+  color: var(--c-ink) !important;
+  padding: var(--s-2) var(--s-3) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.pagefind-ui__search-input:focus {
+  outline: 2px solid var(--c-focus) !important;
+  outline-offset: 2px !important;
+  border-color: var(--c-rule-strong) !important;
+}
+
+.pagefind-ui__search-input::placeholder {
+  color: var(--c-ink-muted) !important;
+  font-style: italic;
+  font-variation-settings: 'opsz' 20;
+}
+
+.pagefind-ui__search-clear {
+  font-family: var(--font-mono) !important;
+  font-size: var(--t-mono-chrome) !important;
+  font-weight: var(--w-mono) !important;
+  color: var(--c-ink-muted) !important;
+  background: transparent !important;
+  text-transform: uppercase;
+  letter-spacing: var(--t-mono-letter);
+  border-radius: 0 !important;
+  padding: 0 var(--s-2) !important;
+}
+
+.pagefind-ui__search-clear:hover {
+  color: var(--c-accent) !important;
+}
+
+/* Pagefind's spinner — recolour to match */
+.pagefind-ui__loading-indicator,
+.pagefind-ui__search-input.pagefind-ui__search-input--loading {
+  border-color: var(--c-accent) transparent transparent transparent !important;
+}
+
+/* ─── Drawer / results area ───────────────────────────────────────── */
+
+.pagefind-ui__drawer {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin-top: var(--s-3);
+}
+
+.pagefind-ui__message {
+  font-family: var(--font-mono) !important;
+  font-size: var(--t-mono-chrome) !important;
+  font-weight: var(--w-mono) !important;
+  letter-spacing: var(--t-mono-letter);
+  text-transform: uppercase;
+  color: var(--c-ink-muted) !important;
+  padding: 0 0 var(--s-2) 0 !important;
+  border-bottom: var(--rule-w) solid var(--c-rule);
+  margin: 0 0 var(--s-2) 0;
+}
+
+.pagefind-ui__results-area {
+  border: 0 !important;
+}
+
+.pagefind-ui__results {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.pagefind-ui__result {
+  padding: var(--s-3) 0 !important;
+  border-bottom: var(--rule-w) solid var(--c-rule) !important;
+  border-top: 0 !important;
+  background: transparent !important;
+  display: block !important;
+}
+
+.pagefind-ui__result:last-child {
+  border-bottom: 0 !important;
+}
+
+.pagefind-ui__result-thumb,
+.pagefind-ui__result-image {
+  border: var(--rule-w) solid var(--c-rule) !important;
+  border-radius: 0 !important;
+}
+
+.pagefind-ui__result-inner {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.pagefind-ui__result-title {
+  font-family: var(--font-display) !important;
+  font-size: var(--t-d4) !important;
+  line-height: var(--t-d4-lh) !important;
+  font-weight: var(--w-display) !important;
+  font-variation-settings: 'opsz' 24;
+  text-wrap: balance;
+  margin: 0 0 var(--s-2) 0 !important;
+}
+
+.pagefind-ui__result-link {
+  color: var(--c-ink) !important;
+  text-decoration: none !important;
+  transition: color var(--t-fast) var(--ease);
+}
+
+.pagefind-ui__result-link:hover,
+.pagefind-ui__result-link:focus-visible {
+  color: var(--c-accent) !important;
+  text-decoration: underline !important;
+  text-decoration-thickness: 0.06em !important;
+  text-underline-offset: 0.18em !important;
+}
+
+.pagefind-ui__result-excerpt {
+  font-family: var(--font-body) !important;
+  font-size: var(--t-body) !important;
+  line-height: 1.5 !important;
+  color: var(--c-ink) !important;
+  margin: 0 !important;
+  max-width: var(--measure);
+}
+
+/* Pagefind's matched-term highlight — recolour to the IBM red flag */
+.pagefind-ui__result-excerpt mark,
+.pagefind-ui mark {
+  background: transparent !important;
+  color: var(--c-accent) !important;
+  font-weight: var(--w-body-em) !important;
+  padding: 0 !important;
+}
+
+/* Tag chips on results (rare, but Pagefind exposes them) */
+.pagefind-ui__result-tags {
+  margin-top: var(--s-2) !important;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+}
+
+.pagefind-ui__result-tag {
+  font-family: var(--font-mono) !important;
+  font-size: var(--t-mono-margin) !important;
+  letter-spacing: var(--t-mono-letter);
+  color: var(--c-ink-muted) !important;
+  background: var(--c-bg-elev) !important;
+  border: var(--rule-w) solid var(--c-rule) !important;
+  padding: 0.05rem var(--s-1) !important;
+  border-radius: 0 !important;
+}
+
+/* Sub-result nesting (Pagefind shows sub-pages under a parent result) */
+.pagefind-ui__result-nested {
+  margin-top: var(--s-3) !important;
+  padding-top: var(--s-2) !important;
+  border-top: var(--rule-w) solid var(--c-rule) !important;
+  padding-left: var(--s-3);
+}
+
+.pagefind-ui__result-nested .pagefind-ui__result-title {
+  font-size: var(--t-body-lg) !important;
+  font-variation-settings: 'opsz' 20;
+  margin-bottom: var(--s-1) !important;
+}
+
+/* ─── "Load more results" button ──────────────────────────────────── */
+
+.pagefind-ui__button {
+  font-family: var(--font-mono) !important;
+  font-size: var(--t-mono-chrome) !important;
+  text-transform: uppercase;
+  letter-spacing: var(--t-mono-letter);
+  background: var(--c-ink) !important;
+  color: var(--c-bg) !important;
+  border: var(--rule-w-strong) solid var(--c-ink) !important;
+  border-radius: 0 !important;
+  padding: var(--s-2) var(--s-3) !important;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+  margin-top: var(--s-4) !important;
+}
+
+.pagefind-ui__button:hover,
+.pagefind-ui__button:focus-visible {
+  background: var(--c-accent) !important;
+  border-color: var(--c-accent) !important;
+}
