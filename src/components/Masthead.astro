@@ -10,12 +10,12 @@ interface Props {
 
 const { large = false } = Astro.props
 ---
-<header class="masthead container">
-  <div class={`mast-row ${large ? 'mast-row--large' : ''}`}>
+<header class={`masthead container ${large ? 'is-large' : ''}`}>
+  <div class="mast-row">
     <a href="/" class="wordmark" aria-label={SITE.title}>
-      {large
-        ? <span class="wordmark-large">{SITE.title}</span>
-        : <span class="wordmark-compact mono-chrome">{SITE.title}</span>}
+      <span class={`wordmark-text ${large ? 'is-large' : 'is-compact'}`}>
+        {SITE.title}
+      </span>
     </a>
     <nav class="mast-nav" aria-label="Primary">
       <SearchTrigger />
@@ -35,45 +35,68 @@ const { large = false } = Astro.props
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: var(--s-4);
+    gap: var(--s-3);
   }
-  .mast-row--large {
+  .is-large .mast-row {
     align-items: flex-start;
     padding-top: var(--s-5);
   }
-  .wordmark { text-decoration: none; color: var(--c-ink); }
+
+  .wordmark {
+    text-decoration: none;
+    color: var(--c-ink);
+    min-width: 0;
+  }
   .wordmark:hover { color: var(--c-ink); }
-  .wordmark-large {
-    font-family: var(--font-display);
-    font-size: var(--t-d1);
-    line-height: var(--t-d1-lh);
-    font-weight: var(--w-display-light);
-    font-variation-settings: 'opsz' 72;
-    letter-spacing: -0.015em;
-    color: var(--c-ink);
-    display: block;
-  }
-  .wordmark-compact {
-    color: var(--c-ink);
+
+  /* Compact form — used on every non-home page and on every page under
+   * 640px wide. Mono uppercase to match the document-strip language. */
+  .wordmark-text {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: var(--t-mono-chrome);
+    font-weight: var(--w-mono);
+    line-height: 1.1;
     letter-spacing: var(--t-mono-letter);
+    text-transform: uppercase;
+    color: var(--c-ink);
   }
+
+  /* Large form — kicks in on home/about pages from 640px up. */
+  @media (min-width: 640px) {
+    .wordmark-text.is-large {
+      font-family: var(--font-display);
+      font-size: var(--t-d1);
+      line-height: var(--t-d1-lh);
+      font-weight: var(--w-display-light);
+      font-variation-settings: 'opsz' 72;
+      letter-spacing: -0.015em;
+      text-transform: none;
+    }
+  }
+
   .mast-nav {
     display: inline-flex;
     align-items: center;
     gap: var(--s-2);
+    flex-shrink: 0;
   }
+
+  /* Tagline drops below the row, never crowding it. */
   .mast-tagline {
     margin-top: var(--s-3);
     font-family: var(--font-body);
-    font-size: var(--t-body-lg);
-    line-height: 1.4;
+    font-size: var(--t-body);
+    line-height: 1.45;
     max-width: var(--measure);
     color: var(--c-ink-muted);
     font-style: italic;
-    font-variation-settings: 'opsz' 24;
+    font-variation-settings: 'opsz' 20;
   }
-  @media (max-width: 600px) {
-    .mast-row--large { flex-direction: column; align-items: flex-start; }
-    .mast-row--large .mast-nav { align-self: flex-end; margin-top: calc(var(--s-4) * -1); }
+  @media (min-width: 640px) {
+    .mast-tagline {
+      font-size: var(--t-body-lg);
+      font-variation-settings: 'opsz' 24;
+    }
   }
 </style>
