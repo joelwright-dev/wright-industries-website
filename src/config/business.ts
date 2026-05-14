@@ -1,18 +1,19 @@
 // Registered business naming. Two states (ADR-008):
 //
 //   Pre-registration  → footer reads "WRIGHT INDUSTRIES · BRISBANE · ABN XX XXX XXX XXX"
-//   Post-registration → footer reads "J. WRIGHT INDUSTRIES · BRISBANE · ABN <real>"
+//   Post-registration → footer reads "J WRIGHT INDUSTRIES · BRISBANE · ABN <real>"
 //
-// Flip `isRegistered` and substitute the real `abn` once ASIC processing
-// completes. No other changes required.
+// The registered name is "J WRIGHT INDUSTRIES" with no period after the J —
+// that is the form ASIC recorded and the form that must appear anywhere the
+// legal business name is shown.
 
 export const BUSINESS = {
   legalName: 'WRIGHT INDUSTRIES',
-  isRegistered: false,
-  abn: 'XX XXX XXX XXX',
+  isRegistered: true,
+  abn: '15 724 733 509',
   location: 'BRISBANE',
 } as const
 
 export function footerBusinessName(): string {
-  return BUSINESS.isRegistered ? `J. ${BUSINESS.legalName}` : BUSINESS.legalName
+  return BUSINESS.isRegistered ? `J ${BUSINESS.legalName}` : BUSINESS.legalName
 }
