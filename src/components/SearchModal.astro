@@ -1,11 +1,14 @@
 ---
 // Site-wide ⌘K / Ctrl+K search modal. Native <dialog> with the Pagefind UI
-// inside. Pagefind is lazy-loaded on first open so initial page weight isn't
-// inflated. The modal lives in BaseLayout so every page picks it up.
+// inside. Pagefind UI is the Default UI shipped by Pagefind — an IIFE that
+// sets `window.PagefindUI`, not an ES module — so it must be loaded via a
+// regular <script> tag, not dynamic import().
 //
-// Graceful degradation: if the browser doesn't support <dialog>.showModal()
-// or the Pagefind index isn't built, the trigger falls back to navigating
-// to /search.
+// The script + stylesheet are injected the first time the modal opens so
+// they don't weigh down pages that never search.
+//
+// Graceful degradation: if <dialog>.showModal() isn't supported, the
+// trigger falls back to navigating to /search.
 ---
 <dialog
   id="search-modal"
@@ -34,50 +37,73 @@
     var dialog = document.getElementById('search-modal')
     if (!dialog) return
     var mount = document.getElementById('search-modal-mount')
-    var initialized = false
-    var loadFailed = false
+    var state = 'idle' // 'idle' | 'loading' | 'ready' | 'failed'
+
+    function showFallback() {
+      if (mount) {
+        mount.innerHTML =
+          '<p class="search-unbuilt mono-margin">Search index unavailable. Try the <a href="/notes">notes</a> or <a href="/projects">projects</a> indexes.</p>'
+      }
+    }
+
+    function instantiateUI() {
+      if (!window.PagefindUI) { state = 'failed'; showFallback(); return }
+      try {
+        new window.PagefindUI({
+          element: '#search-modal-mount',
+          showSubResults: true,
+          showImages: false,
+          resetStyles: false,
+          autofocus: true,
+          translations: {
+            placeholder: 'Search notes, releases, projects…',
+            clear_search: 'Clear',
+            load_more: 'Load more results',
+            search_label: 'Search Wright Industries',
+            zero_results: 'No results for [SEARCH_TERM].',
+            many_results: '[COUNT] results for [SEARCH_TERM].',
+            one_result: '[COUNT] result for [SEARCH_TERM].',
+          },
+        })
+        state = 'ready'
+      } catch (err) {
+        state = 'failed'
+        showFallback()
+      }
+    }
 
     function ensurePagefind() {
-      if (initialized || loadFailed) return
-      initialized = true
-      import('/pagefind/pagefind-ui.js')
-        .then(function (mod) {
-          new mod.PagefindUI({
-            element: '#search-modal-mount',
-            showSubResults: true,
-            showImages: false,
-            resetStyles: false,
-            autofocus: true,
-            translations: {
-              placeholder: 'Search notes, releases, projects…',
-              clear_search: 'Clear',
-              load_more: 'Load more results',
-              search_label: 'Search Wright Industries',
-              zero_results: 'No results for [SEARCH_TERM].',
-              many_results: '[COUNT] results for [SEARCH_TERM].',
-              one_result: '[COUNT] result for [SEARCH_TERM].',
-            },
-          })
-        })
-        .catch(function () {
-          loadFailed = true
-          initialized = false
-          if (mount) {
-            mount.innerHTML =
-              '<p class="search-unbuilt mono-margin">Search index has not been built yet. Run <code>pnpm build</code> first.</p>'
-          }
-        })
+      if (state === 'ready' || state === 'loading' || state === 'failed') return
+      state = 'loading'
+
+      if (!document.querySelector('link[data-pagefind-css]')) {
+        var link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = '/pagefind/pagefind-ui.css'
+        link.setAttribute('data-pagefind-css', '')
+        document.head.appendChild(link)
+      }
+
+      if (window.PagefindUI) { instantiateUI(); return }
+
+      var script = document.createElement('script')
+      script.src = '/pagefind/pagefind-ui.js'
+      script.async = true
+      script.onload = instantiateUI
+      script.onerror = function () {
+        state = 'failed'
+        showFallback()
+      }
+      document.head.appendChild(script)
     }
 
     function openModal() {
       if (typeof dialog.showModal !== 'function') {
-        // Browser lacks <dialog> — fall back to the dedicated page.
         location.href = '/search'
         return
       }
       if (!dialog.open) dialog.showModal()
       ensurePagefind()
-      // Focus the search input after Pagefind has rendered.
       setTimeout(function () {
         var input = dialog.querySelector('input[type="text"], input[type="search"]')
         if (input) input.focus()
@@ -96,12 +122,10 @@
     var closeBtn = dialog.querySelector('[data-close]')
     if (closeBtn) closeBtn.addEventListener('click', function () { dialog.close() })
 
-    // Backdrop click closes (only when the click target IS the dialog itself).
     dialog.addEventListener('click', function (e) {
       if (e.target === dialog) dialog.close()
     })
 
-    // Clicking a search result navigates and closes the dialog.
     dialog.addEventListener('click', function (e) {
       var t = e.target
       while (t && t !== dialog) {
@@ -166,8 +190,6 @@
 </style>
 
 <style is:global>
-  /* Theme overrides for the Pagefind default UI within the modal context.
-   * Variables documented at https://pagefind.app/docs/ui-usage/#styling */
   :root {
     --pagefind-ui-scale: 0.9;
     --pagefind-ui-primary: var(--c-ink);

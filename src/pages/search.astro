@@ -29,38 +29,33 @@ import BaseLayout from '~/layouts/BaseLayout.astro'
     </noscript>
   </article>
 
-  <link
-    rel="stylesheet"
-    href="/pagefind/pagefind-ui.css"
-    onerror="this.dataset.failed = '1'"
-  />
+  <link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
+  <script is:inline src="/pagefind/pagefind-ui.js"></script>
   <script is:inline>
-    (async function () {
-      const mount = document.getElementById('search-mount')
+    (function () {
+      var mount = document.getElementById('search-mount')
       if (!mount) return
-      try {
-        const mod = await import('/pagefind/pagefind-ui.js')
-        new mod.PagefindUI({
-          element: '#search-mount',
-          showSubResults: true,
-          showImages: false,
-          resetStyles: false,
-          autofocus: true,
-          translations: {
-            placeholder: 'Search notes, releases, projects…',
-            clear_search: 'Clear',
-            load_more: 'Load more results',
-            search_label: 'Search Wright Industries',
-            zero_results: 'No results for [SEARCH_TERM].',
-            many_results: '[COUNT] results for [SEARCH_TERM].',
-            one_result: '[COUNT] result for [SEARCH_TERM].',
-          },
-        })
-      } catch (err) {
-        console.warn('[pagefind] index not loaded:', err)
+      if (!window.PagefindUI) {
         mount.innerHTML =
-          '<p class="search-unbuilt mono-margin">The search index has not been built yet. Run <code>pnpm build &amp;&amp; pnpm preview</code> to enable search locally.</p>'
+          '<p class="search-unbuilt mono-margin">The search index has not been built yet. Run <code>pnpm build</code> first.</p>'
+        return
       }
+      new window.PagefindUI({
+        element: '#search-mount',
+        showSubResults: true,
+        showImages: false,
+        resetStyles: false,
+        autofocus: true,
+        translations: {
+          placeholder: 'Search notes, releases, projects…',
+          clear_search: 'Clear',
+          load_more: 'Load more results',
+          search_label: 'Search Wright Industries',
+          zero_results: 'No results for [SEARCH_TERM].',
+          many_results: '[COUNT] results for [SEARCH_TERM].',
+          one_result: '[COUNT] result for [SEARCH_TERM].',
+        },
+      })
     })()
   </script>
 </BaseLayout>
