@@ -39,7 +39,7 @@ function escapeHTML(s: string): string {
     .replace(/'/g, '&#39;')
 }
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, redirect }) => {
   try {
     const form = await request.formData()
     const submission: Submission = {
@@ -58,8 +58,8 @@ export const POST: APIRoute = async ({ request }) => {
     if (submission.message.length > 8000) errors.push('message-too-long')
 
     if (errors.length > 0) {
-      return Response.redirect(
-        new URL(`/contact?error=${encodeURIComponent(errors.join(','))}`, request.url),
+      return redirect(
+        `/contact?error=${encodeURIComponent(errors.join(','))}`,
         303,
       )
     }
@@ -76,7 +76,7 @@ export const POST: APIRoute = async ({ request }) => {
       console.warn(
         '[contact] RESEND_API_KEY not set — submission logged only, no email sent',
       )
-      return Response.redirect(new URL('/contact?ok=1', request.url), 303)
+      return redirect('/contact?ok=1', 303)
     }
 
     const resend = new Resend(RESEND_API_KEY)
@@ -110,7 +110,7 @@ export const POST: APIRoute = async ({ request }) => {
       console.warn('[contact] auto-reply send failed (non-fatal)', replyRes.error)
     }
 
-    return Response.redirect(new URL('/contact?ok=1', request.url), 303)
+    return redirect('/contact?ok=1', 303)
   } catch (err) {
     console.error('[contact] error', err)
     return new Response('Server error', { status: 500 })
