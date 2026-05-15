@@ -50,35 +50,41 @@ function resolveHref(
   // Explicit page mention — most direct path.
   if (item.type === 'mention') {
     if (item.mention.type === 'page') {
-      const resolved = resolveLink(item.mention.page.id)
-      if (resolved) return resolved
+      // Unresolvable mention → drop the href (renders as plain text) rather
+      // than leak a Notion-only URL or 404 path.
+      return resolveLink(item.mention.page.id)
     }
     if (item.mention.type === 'database') {
-      const resolved = resolveLink(item.mention.database.id)
-      if (resolved) return resolved
+      return resolveLink(item.mention.database.id)
     }
   }
-  // Bare link or any other case: if the href looks like a Notion page URL,
-  // pull the trailing 32-hex page ID and try to resolve.
+  // Bare link: if the href looks like a Notion page reference, try to
+  // resolve it. If it identifies as Notion but doesn't resolve, drop the
+  // href (Notion path-only `/<id>` would 404 on our site); otherwise pass
+  // the original href through unchanged.
   if (item.href) {
     const pageId = extractNotionPageId(item.href)
-    if (pageId) {
-      const resolved = resolveLink(pageId)
-      if (resolved) return resolved
+    if (pageId !== null) {
+      return resolveLink(pageId)
     }
     return item.href
   }
   return null
 }
 
-/** Notion URL forms we want to recognise:
+/** Notion href forms we want to recognise:
+ *  - /<32hex>                         (path-only — what the API actually
+ *    returns for an inline cmd-K link to another Notion page)
+ *  - /<dashed-uuid>
  *  - https://www.notion.so/Workspace/Title-<32hex>
  *  - https://www.notion.so/<32hex>
  *  - https://www.notion.so/<dashed-uuid>
  *  - notion://... variants
  * Returns the page ID with dashes stripped, or null. */
 export function extractNotionPageId(href: string): string | null {
-  if (!/notion\.so|notion\.site|notion:/.test(href)) return null
+  const isNotionScheme = /^notion:|notion\.so|notion\.site/.test(href)
+  const isPathOnly = href.startsWith('/')
+  if (!isNotionScheme && !isPathOnly) return null
   const last = href.split('?')[0]?.split('#')[0]?.split('/').pop() ?? ''
   // Dashed UUID at end
   const dashed = last.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i)
