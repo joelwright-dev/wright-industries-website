@@ -1,0 +1,118 @@
+---
+import type { FileBlock } from '~/lib/content-blocks'
+import { inlineHTML, inlineText } from '~/lib/inline'
+
+interface Props { block: FileBlock }
+const { block } = Astro.props
+
+const captionHTML = inlineHTML(block.caption)
+const captionText = inlineText(block.caption)
+
+const labelByKind: Record<FileBlock['fileKind'], string> = {
+  file: 'FILE',
+  pdf: 'PDF',
+  video: 'VIDEO',
+  audio: 'AUDIO',
+}
+const kindLabel = labelByKind[block.fileKind]
+
+const inferredExt = (() => {
+  const m = block.src.split('?')[0]?.match(/\.([a-zA-Z0-9]{1,8})$/)
+  return m?.[1]?.toUpperCase() ?? null
+})()
+
+function formatSize(bytes: number | null): string | null {
+  if (!bytes) return null
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+}
+const sizeLabel = formatSize(block.sizeBytes)
+
+const displayName =
+  block.filename ||
+  captionText ||
+  decodeURIComponent(block.src.split('/').pop()?.split('?')[0] ?? '') ||
+  block.src
+
+const inlineMedia = block.fileKind === 'video' || block.fileKind === 'audio'
+---
+{inlineMedia ? (
+  <figure class="file-media">
+    {block.fileKind === 'video' ? (
+      <video controls preload="metadata" src={block.src}></video>
+    ) : (
+      <audio controls preload="metadata" src={block.src}></audio>
+    )}
+    {captionHTML.length > 0 && <figcaption set:html={captionHTML} />}
+  </figure>
+) : (
+  <figure class="file-card-wrap">
+    <a class="file-card" href={block.src} target="_blank" rel="noopener">
+      <span class="file-kind mono-margin">
+        {kindLabel}{inferredExt && inferredExt !== kindLabel ? ` · ${inferredExt}` : ''}
+      </span>
+      <span class="file-name">{displayName}</span>
+      {(sizeLabel || block.mimeType) && (
+        <span class="file-meta mono-caption">
+          {sizeLabel}
+          {sizeLabel && block.mimeType ? ' · ' : ''}
+          {block.mimeType}
+        </span>
+      )}
+    </a>
+    {captionHTML.length > 0 && <figcaption set:html={captionHTML} />}
+  </figure>
+)}
+
+<style>
+  .file-card-wrap, .file-media {
+    margin-block: var(--s-4);
+  }
+  .file-card {
+    display: block;
+    padding: var(--s-3);
+    border: var(--rule-w) solid var(--c-rule);
+    background: var(--c-bg-elev);
+    text-decoration: none;
+    color: var(--c-ink);
+    transition: border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+  }
+  .file-card:hover, .file-card:focus-visible {
+    border-color: var(--c-rule-strong);
+    color: var(--c-accent);
+  }
+  .file-kind {
+    display: block;
+    color: var(--c-ink-muted);
+    margin-bottom: var(--s-1);
+  }
+  .file-name {
+    display: block;
+    font-family: var(--font-display);
+    font-size: var(--t-body);
+    font-weight: var(--w-display);
+    font-variation-settings: 'opsz' 16;
+    word-break: break-word;
+  }
+  .file-meta {
+    display: block;
+    color: var(--c-ink-muted);
+    margin-top: var(--s-1);
+  }
+  .file-media video, .file-media audio {
+    width: 100%;
+    display: block;
+    border: var(--rule-w) solid var(--c-rule);
+    background: var(--c-bg-elev);
+  }
+  .file-media figcaption, .file-card-wrap figcaption {
+    font-family: var(--font-mono);
+    font-size: var(--t-mono-caption);
+    line-height: var(--t-mono-caption-lh);
+    letter-spacing: var(--t-mono-letter);
+    color: var(--c-ink-muted);
+    margin-top: var(--s-2);
+    max-width: var(--measure);
+  }
+</style>

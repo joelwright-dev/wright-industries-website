@@ -20,8 +20,9 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 
-# notion image cache (downloaded at build, content-hashed)
+# notion asset caches (downloaded at build, content-hashed)
 public/_notion-images/
+public/_notion-files/
 
 # editor
 .DS_Store

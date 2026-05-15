@@ -102,6 +102,20 @@ export interface EmbedBlock {
   readonly caption: InlineRuns
 }
 
+/** Notion `file`, `pdf`, `video`, `audio` blocks. `src` is the final local
+ * URL after build-time download (or the external URL passed through). */
+export type FileKind = 'file' | 'pdf' | 'video' | 'audio'
+
+export interface FileBlock {
+  readonly kind: 'file'
+  readonly fileKind: FileKind
+  readonly src: string
+  readonly filename: string | null
+  readonly mimeType: string | null
+  readonly sizeBytes: number | null
+  readonly caption: InlineRuns
+}
+
 export interface TableBlock {
   readonly kind: 'table'
   readonly hasHeaderRow: boolean
@@ -133,5 +147,6 @@ export type ContentBlock =
   | BookmarkBlock
   | EquationBlock
   | EmbedBlock
+  | FileBlock
   | TableBlock
   | UnknownBlock

@@ -17,6 +17,7 @@ import Divider from './Divider.astro'
 import Bookmark from './Bookmark.astro'
 import Equation from './Equation.astro'
 import Embed from './Embed.astro'
+import File from './File.astro'
 import Table from './Table.astro'
 import Unknown from './Unknown.astro'
 
@@ -35,5 +36,6 @@ const { block } = Astro.props
 {block.kind === 'bookmark'  && <Bookmark block={block} />}
 {block.kind === 'equation'  && <Equation block={block} />}
 {block.kind === 'embed'     && <Embed block={block} />}
+{block.kind === 'file'      && <File block={block} />}
 {block.kind === 'table'     && <Table block={block} />}
 {block.kind === 'unknown'   && <Unknown block={block} />}

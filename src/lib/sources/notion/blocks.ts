@@ -14,7 +14,9 @@ import type {
   TableRow,
 } from '~/lib/content-blocks'
 
-import { toRuns, plainText } from './rich-text'
+import { toRuns, plainText, type LinkResolver } from './rich-text'
+
+const NO_RESOLVE: LinkResolver = () => null
 
 /** A Notion block plus its (recursively resolved) children. */
 export interface BlockNode {
@@ -22,7 +24,10 @@ export interface BlockNode {
   readonly children: readonly BlockNode[]
 }
 
-export function convertBlocks(nodes: readonly BlockNode[]): readonly ContentBlock[] {
+export function convertBlocks(
+  nodes: readonly BlockNode[],
+  resolveLink: LinkResolver = NO_RESOLVE,
+): readonly ContentBlock[] {
   const out: ContentBlock[] = []
   let listBuf: { ordered: boolean; items: ListItem[] } | null = null
 
@@ -38,11 +43,11 @@ export function convertBlocks(nodes: readonly BlockNode[]): readonly ContentBloc
     if (t === 'bulleted_list_item' || t === 'numbered_list_item') {
       const ordered = t === 'numbered_list_item'
       const runs = t === 'bulleted_list_item'
-        ? toRuns(node.block.bulleted_list_item.rich_text)
-        : toRuns(node.block.numbered_list_item.rich_text)
+        ? toRuns(node.block.bulleted_list_item.rich_text, resolveLink)
+        : toRuns(node.block.numbered_list_item.rich_text, resolveLink)
       const item: ListItem = {
         runs,
-        children: convertBlocks(node.children),
+        children: convertBlocks(node.children, resolveLink),
       }
       if (!listBuf || listBuf.ordered !== ordered) {
         flushList()
@@ -54,7 +59,7 @@ export function convertBlocks(nodes: readonly BlockNode[]): readonly ContentBloc
 
     flushList()
 
-    const converted = convertOne(node)
+    const converted = convertOne(node, resolveLink)
     if (converted) out.push(converted)
   }
 
@@ -62,46 +67,46 @@ export function convertBlocks(nodes: readonly BlockNode[]): readonly ContentBloc
   return out
 }
 
-function convertOne(node: BlockNode): ContentBlock | null {
+function convertOne(node: BlockNode, resolveLink: LinkResolver): ContentBlock | null {
   const b = node.block
   switch (b.type) {
     case 'heading_1':
-      return { kind: 'heading', level: 1, runs: toRuns(b.heading_1.rich_text) }
+      return { kind: 'heading', level: 1, runs: toRuns(b.heading_1.rich_text, resolveLink) }
     case 'heading_2':
-      return { kind: 'heading', level: 2, runs: toRuns(b.heading_2.rich_text) }
+      return { kind: 'heading', level: 2, runs: toRuns(b.heading_2.rich_text, resolveLink) }
     case 'heading_3':
-      return { kind: 'heading', level: 3, runs: toRuns(b.heading_3.rich_text) }
+      return { kind: 'heading', level: 3, runs: toRuns(b.heading_3.rich_text, resolveLink) }
     case 'paragraph':
-      return { kind: 'paragraph', runs: toRuns(b.paragraph.rich_text) }
+      return { kind: 'paragraph', runs: toRuns(b.paragraph.rich_text, resolveLink) }
     case 'quote':
       return {
         kind: 'quote',
-        runs: toRuns(b.quote.rich_text),
-        children: convertBlocks(node.children),
+        runs: toRuns(b.quote.rich_text, resolveLink),
+        children: convertBlocks(node.children, resolveLink),
       }
     case 'code':
       return {
         kind: 'code',
         code: plainText(b.code.rich_text),
         language: b.code.language && b.code.language !== 'plain text' ? b.code.language : null,
-        caption: toRuns(b.code.caption),
+        caption: toRuns(b.code.caption, resolveLink),
       }
     case 'callout':
       return {
         kind: 'callout',
         icon: extractIcon(b.callout.icon),
-        runs: toRuns(b.callout.rich_text),
-        children: convertBlocks(node.children),
+        runs: toRuns(b.callout.rich_text, resolveLink),
+        children: convertBlocks(node.children, resolveLink),
       }
     case 'toggle':
       return {
         kind: 'toggle',
-        summary: toRuns(b.toggle.rich_text),
-        children: convertBlocks(node.children),
+        summary: toRuns(b.toggle.rich_text, resolveLink),
+        children: convertBlocks(node.children, resolveLink),
       }
     case 'image': {
       const src = b.image.type === 'external' ? b.image.external.url : b.image.file.url
-      const caption = toRuns(b.image.caption)
+      const caption = toRuns(b.image.caption, resolveLink)
       const alt = plainText(b.image.caption).trim()
       if (alt.length === 0) {
         console.warn(
@@ -123,7 +128,7 @@ function convertOne(node: BlockNode): ContentBlock | null {
       return {
         kind: 'bookmark',
         url: b.bookmark.url,
-        caption: toRuns(b.bookmark.caption),
+        caption: toRuns(b.bookmark.caption, resolveLink),
       }
     case 'equation':
       return { kind: 'equation', expression: b.equation.expression }
@@ -131,14 +136,66 @@ function convertOne(node: BlockNode): ContentBlock | null {
       return {
         kind: 'embed',
         url: b.embed.url,
-        caption: toRuns(b.embed.caption),
+        caption: toRuns(b.embed.caption, resolveLink),
       }
+    case 'file': {
+      const p = b.file
+      const src = p.type === 'external' ? p.external.url : p.file.url
+      return {
+        kind: 'file',
+        fileKind: 'file',
+        src,
+        filename: p.name,
+        mimeType: null,
+        sizeBytes: null,
+        caption: toRuns(p.caption, resolveLink),
+      }
+    }
+    case 'pdf': {
+      const p = b.pdf
+      const src = p.type === 'external' ? p.external.url : p.file.url
+      return {
+        kind: 'file',
+        fileKind: 'pdf',
+        src,
+        filename: null,
+        mimeType: 'application/pdf',
+        sizeBytes: null,
+        caption: toRuns(p.caption, resolveLink),
+      }
+    }
+    case 'video': {
+      const p = b.video
+      const src = p.type === 'external' ? p.external.url : p.file.url
+      return {
+        kind: 'file',
+        fileKind: 'video',
+        src,
+        filename: null,
+        mimeType: null,
+        sizeBytes: null,
+        caption: toRuns(p.caption, resolveLink),
+      }
+    }
+    case 'audio': {
+      const p = b.audio
+      const src = p.type === 'external' ? p.external.url : p.file.url
+      return {
+        kind: 'file',
+        fileKind: 'audio',
+        src,
+        filename: null,
+        mimeType: null,
+        sizeBytes: null,
+        caption: toRuns(p.caption, resolveLink),
+      }
+    }
     case 'table': {
       const rows: TableRow[] = node.children
         .filter((c) => c.block.type === 'table_row')
         .map((c) => {
           const tr = c.block as Extract<BlockObjectResponse, { type: 'table_row' }>
-          return { cells: tr.table_row.cells.map((cell) => toRuns(cell)) }
+          return { cells: tr.table_row.cells.map((cell) => toRuns(cell, resolveLink)) }
         })
       return {
         kind: 'table',

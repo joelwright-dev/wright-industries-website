@@ -105,25 +105,30 @@ const stripLeft = `DOCUMENT ${docNum} · ${projectCode} · ${typeLabel} · ${ent
     align-items: start;
   }
 
+  .marginalia {
+    position: sticky;
+    top: var(--s-3);
+  }
+
   @media (max-width: 900px) {
     .doc-grid {
       grid-template-columns: 1fr;
       gap: var(--s-4);
     }
     .marginalia {
+      /* Stays sticky on mobile too — the bg-elev fill + rule below keep
+       * it readable as page content scrolls beneath. */
+      top: 0;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
-      gap: var(--s-3) var(--s-4);
-      padding-bottom: var(--s-3);
+      gap: var(--s-2) var(--s-4);
+      padding: var(--s-2) var(--s-3);
+      margin-inline: calc(var(--container-pad) * -1);
+      background: var(--c-bg-elev);
       border-bottom: var(--rule-w) solid var(--c-rule);
-      position: static;
+      z-index: 1;
     }
     .margin-block { margin-bottom: 0; }
-  }
-
-  .marginalia {
-    position: sticky;
-    top: var(--s-3);
   }
 
   .margin-block {

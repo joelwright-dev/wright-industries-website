@@ -39,6 +39,7 @@ import {
 } from './properties'
 import { convertBlocks, numberFigures, type BlockNode } from './blocks'
 import { localizeImageUrl, localizeImagesInBlocks } from './images'
+import type { LinkResolver } from './rich-text'
 
 export interface NotionContentSourceOptions {
   readonly token: string
@@ -65,6 +66,7 @@ export class NotionContentSource implements ContentSource {
   private projectsCache: Promise<readonly ProjectInternal[]> | null = null
   private entriesByProjectCache = new Map<string, Promise<readonly EntryInternal[]>>()
   private blockTreeCache = new Map<string, Promise<readonly BlockNode[]>>()
+  private linkResolverCache: Promise<LinkResolver> | null = null
 
   constructor(opts: NotionContentSourceOptions) {
     this.client = new Client({ auth: opts.token, timeoutMs: 90_000 })
@@ -84,10 +86,13 @@ export class NotionContentSource implements ContentSource {
     if (!internal) return null
     // Project overview blocks = all child blocks of the project page,
     // excluding the embedded notes child_database.
-    const tree = await this.getBlockTree(internal.pageId)
+    const [tree, resolveLink] = await Promise.all([
+      this.getBlockTree(internal.pageId),
+      this.getLinkResolver(),
+    ])
     const overviewNodes = tree.filter((n) => n.block.type !== 'child_database')
     const blocks = await localizeImagesInBlocks(
-      numberFigures(convertBlocks(overviewNodes)),
+      numberFigures(convertBlocks(overviewNodes, resolveLink)),
     )
     return { ...internal.meta, blocks }
   }
@@ -101,9 +106,12 @@ export class NotionContentSource implements ContentSource {
     const entries = await this.loadEntriesByProjectSlug(projectSlug)
     const internal = entries.find((e) => e.meta.slug === slug)
     if (!internal) return null
-    const tree = await this.getBlockTree(internal.pageId)
+    const [tree, resolveLink] = await Promise.all([
+      this.getBlockTree(internal.pageId),
+      this.getLinkResolver(),
+    ])
     const blocks = await localizeImagesInBlocks(
-      numberFigures(convertBlocks(tree)),
+      numberFigures(convertBlocks(tree, resolveLink)),
     )
     return { ...internal.meta, blocks }
   }
@@ -117,6 +125,39 @@ export class NotionContentSource implements ContentSource {
   }
 
   // ─── Internal ────────────────────────────────────────────────────────
+
+  /** Build (and cache) a map from Notion page ID → site URL for every
+   * known project and entry. Used by the rich-text converter to rewrite
+   * Notion mention/link hrefs into local URLs. */
+  private getLinkResolver(): Promise<LinkResolver> {
+    if (this.linkResolverCache) return this.linkResolverCache
+    const promise = (async (): Promise<LinkResolver> => {
+      const projects = await this.loadProjects()
+      const entriesByProject = await Promise.all(
+        projects.map((p) => this.loadEntriesByProjectSlug(p.meta.slug)),
+      )
+      const map = new Map<string, string>()
+      const normalise = (id: string): string => id.replace(/-/g, '').toLowerCase()
+      for (const p of projects) {
+        map.set(normalise(p.pageId), `/projects/${p.meta.slug}`)
+      }
+      for (const entries of entriesByProject) {
+        for (const e of entries) {
+          const segment = e.meta.type === 'release' ? 'releases' : 'notes'
+          map.set(
+            normalise(e.pageId),
+            `/projects/${e.meta.projectSlug}/${segment}/${e.meta.slug}`,
+          )
+        }
+      }
+      return (pageId: string) => map.get(normalise(pageId)) ?? null
+    })().catch((err: unknown) => {
+      this.linkResolverCache = null
+      throw err
+    })
+    this.linkResolverCache = promise
+    return promise
+  }
 
   private loadProjects(): Promise<readonly ProjectInternal[]> {
     if (this.projectsCache) return this.projectsCache

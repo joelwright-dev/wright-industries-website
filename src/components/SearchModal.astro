@@ -146,6 +146,15 @@
     color: var(--c-ink);
     box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.35);
     margin: auto;
+    /* Flex column so the header is fixed and only the body scrolls.
+     * Without overflow:hidden the dialog itself also scrolls, producing
+     * the dreaded nested scrollbar. */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .search-modal[open] {
+    display: flex;
   }
   .search-modal::backdrop {
     background: rgba(26, 22, 18, 0.55);
@@ -158,6 +167,7 @@
     padding: var(--s-2) var(--s-3);
     border-bottom: var(--rule-w) solid var(--c-rule);
     background: var(--c-bg-elev);
+    flex-shrink: 0;
   }
   .modal-title {
     display: flex;
@@ -185,7 +195,8 @@
   .modal-body {
     padding: var(--s-3) var(--s-3) var(--s-4);
     overflow-y: auto;
-    max-height: calc(80vh - 3rem);
+    flex: 1 1 auto;
+    min-height: 0;
   }
 </style>
 
