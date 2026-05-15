@@ -146,15 +146,14 @@
     color: var(--c-ink);
     box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.35);
     margin: auto;
-    /* Flex column so the header is fixed and only the body scrolls.
-     * Without overflow:hidden the dialog itself also scrolls, producing
-     * the dreaded nested scrollbar. */
-    display: flex;
-    flex-direction: column;
     overflow: hidden;
   }
+  /* Only flex-lay when actually open — otherwise the unconditional
+   * display:flex would override the UA `display:none` on closed
+   * <dialog>s and render the modal as a block in normal flow. */
   .search-modal[open] {
     display: flex;
+    flex-direction: column;
   }
   .search-modal::backdrop {
     background: rgba(26, 22, 18, 0.55);
