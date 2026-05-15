@@ -14,6 +14,14 @@ export const BUSINESS = {
   location: 'BRISBANE',
 } as const
 
+/** Email routing for the contact form. Sender addresses must live on a
+ * domain that's verified in Resend (DKIM/SPF/DMARC). The inbox does not. */
+export const BUSINESS_EMAIL = {
+  inbox: 'joel@wrightindustries.com.au',
+  notificationFrom: 'Wright Industries <noreply@wrightindustries.com.au>',
+  autoReplyFrom: 'Wright Industries <noreply@wrightindustries.com.au>',
+} as const
+
 export function footerBusinessName(): string {
   return BUSINESS.isRegistered ? `J ${BUSINESS.legalName}` : BUSINESS.legalName
 }

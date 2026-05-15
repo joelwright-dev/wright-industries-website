@@ -38,12 +38,10 @@ const ERROR_MESSAGES: Record<string, string> = {
 
     {ok && (
       <aside class="banner banner-ok" role="status">
-        <p class="banner-kicker mono-chrome">MESSAGE RECEIVED</p>
+        <p class="banner-kicker mono-chrome">MESSAGE SENT</p>
         <p class="banner-body">
-          Thank you. Your message has been logged. Email delivery is still
-          stubbed — once the domain is verified, replies will land in your
-          inbox; until then your message lives in the function logs and will
-          be retrieved manually.
+          Thank you. A copy is on its way to your inbox and I'll get back to
+          you as soon as I can.
         </p>
       </aside>
     )}
@@ -77,10 +75,6 @@ const ERROR_MESSAGES: Record<string, string> = {
         <textarea id="message" name="message" rows="8" required></textarea>
       </div>
       <button type="submit" class="submit mono-chrome">Send →</button>
-      <p class="form-note mono-margin">
-        The contact endpoint is stubbed until the domain DKIM/SPF is wired up.
-        Submissions are logged but not yet delivered to email.
-      </p>
     </form>
   </article>
 </BaseLayout>
@@ -155,11 +149,6 @@ const ERROR_MESSAGES: Record<string, string> = {
     background: var(--c-accent);
     border-color: var(--c-accent);
   }
-  .form-note {
-    color: var(--c-ink-muted);
-    margin-top: calc(-1 * var(--s-2));
-  }
-
   .banner {
     max-width: var(--measure);
     padding: var(--s-3);
