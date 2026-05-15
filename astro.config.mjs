@@ -100,6 +100,17 @@ export default defineConfig({
   output: 'static',
   adapter: vercel(),
   integrations: [sitemap(), postBuildIntegration()],
+  // Astro 5 enables a cross-origin form-POST check by default. That guard
+  // is meant for cookie-authenticated mutating endpoints, where it
+  // prevents another site from POSTing on a user's behalf. The only
+  // public form on this site is /api/contact, which has no session
+  // cookies and validates input server-side — there's nothing CSRF can
+  // forge. Vercel's proxying also makes the Origin check unreliable for
+  // routes hit through the serverless adapter (it has fired on legitimate
+  // submissions from the canonical hostname). Disable globally.
+  security: {
+    checkOrigin: false,
+  },
   env: {
     schema: {
       NOTION_TOKEN: envField.string({ context: 'server', access: 'secret' }),
