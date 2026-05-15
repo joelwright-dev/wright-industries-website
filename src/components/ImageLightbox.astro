@@ -1,0 +1,138 @@
+---
+// Site-wide image lightbox. A single <dialog> reused across the page;
+// any <a data-zoom href="<img-src>"> link wired to it opens the larger
+// view in the dialog instead of navigating.
+//
+// Graceful degradation: without JS, the anchor falls back to navigating
+// the browser to the raw image URL, so the larger view is still
+// reachable.
+---
+<dialog id="image-lightbox" class="image-lightbox" aria-label="Image preview">
+  <button
+    type="button"
+    class="lightbox-close mono-chrome"
+    aria-label="Close preview"
+    data-close
+  >
+    <span aria-hidden="true">Esc</span>
+  </button>
+  <figure class="lightbox-figure">
+    <img class="lightbox-img" src="" alt="" />
+    <figcaption class="lightbox-caption mono-caption"></figcaption>
+  </figure>
+</dialog>
+
+<script is:inline>
+  (function () {
+    var dialog = document.getElementById('image-lightbox')
+    if (!dialog) return
+    var img = dialog.querySelector('.lightbox-img')
+    var caption = dialog.querySelector('.lightbox-caption')
+    var closeBtn = dialog.querySelector('[data-close]')
+
+    function open(trigger) {
+      if (typeof dialog.showModal !== 'function') return false
+      var href = trigger.getAttribute('href') || ''
+      var alt =
+        trigger.getAttribute('data-zoom-alt') ||
+        (trigger.querySelector('img') && trigger.querySelector('img').alt) ||
+        ''
+      var cap = trigger.getAttribute('data-zoom-caption') || ''
+      img.src = href
+      img.alt = alt
+      caption.textContent = cap
+      caption.hidden = cap.length === 0
+      if (!dialog.open) dialog.showModal()
+      return true
+    }
+
+    document.addEventListener('click', function (e) {
+      var t = e.target
+      var trigger = null
+      while (t && t !== document) {
+        if (t.matches && t.matches('a[data-zoom]')) { trigger = t; break }
+        t = t.parentNode
+      }
+      if (!trigger) return
+      if (open(trigger)) e.preventDefault()
+    })
+
+    if (closeBtn) closeBtn.addEventListener('click', function () { dialog.close() })
+    dialog.addEventListener('click', function (e) {
+      if (e.target === dialog) dialog.close()
+    })
+    dialog.addEventListener('close', function () {
+      img.src = ''
+      caption.textContent = ''
+    })
+  })()
+</script>
+
+<style>
+  .image-lightbox {
+    width: min(96vw, 1400px);
+    max-width: 96vw;
+    max-height: 96vh;
+    padding: 0;
+    border: var(--rule-w-strong) solid var(--c-ink);
+    background: var(--c-bg);
+    color: var(--c-ink);
+    box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.4);
+    margin: auto;
+  }
+  .image-lightbox[open] {
+    display: flex;
+    flex-direction: column;
+  }
+  .image-lightbox::backdrop {
+    background: rgba(26, 22, 18, 0.85);
+    backdrop-filter: blur(2px);
+  }
+
+  .lightbox-close {
+    position: absolute;
+    top: var(--s-2);
+    right: var(--s-2);
+    z-index: 2;
+    color: var(--c-ink-muted);
+    border: var(--rule-w) solid var(--c-rule);
+    background: var(--c-bg);
+    padding: 0.15rem var(--s-1);
+    transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+  }
+  .lightbox-close:hover,
+  .lightbox-close:focus-visible {
+    color: var(--c-accent);
+    border-color: var(--c-rule-strong);
+  }
+
+  .lightbox-figure {
+    margin: 0;
+    padding: var(--s-3);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+    min-height: 0;
+  }
+  .lightbox-img {
+    display: block;
+    width: 100%;
+    max-height: calc(96vh - 5rem);
+    object-fit: contain;
+    background: var(--c-bg-elev);
+  }
+  .lightbox-caption {
+    color: var(--c-ink-muted);
+    text-align: center;
+    max-width: var(--measure);
+    margin-inline: auto;
+  }
+  .lightbox-caption[hidden] {
+    display: none;
+  }
+
+  @media (max-width: 600px) {
+    .lightbox-figure { padding: var(--s-2); }
+    .lightbox-img { max-height: calc(96vh - 4rem); }
+  }
+</style>

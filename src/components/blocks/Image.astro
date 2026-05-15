@@ -13,9 +13,21 @@ const captionHTML = inlineHTML(block.caption)
 // numberFigures pass in blocks.ts.
 const figLabel = block.figureNumber ? `Fig. ${block.figureNumber}` : null
 const alt = block.alt.length > 0 ? block.alt : captionText
+// Caption passed to the lightbox combines the figure label with the
+// caption text so the preview reads the same as the in-page figcaption.
+const zoomCaption = [figLabel, captionText].filter(Boolean).join(' · ')
 ---
 <figure class="figure">
-  <img src={block.src} alt={alt} loading="lazy" decoding="async" />
+  <a
+    class="figure-link"
+    href={block.src}
+    data-zoom
+    data-zoom-alt={alt}
+    data-zoom-caption={zoomCaption}
+    aria-label={alt ? `View larger: ${alt}` : 'View larger image'}
+  >
+    <img src={block.src} alt={alt} loading="lazy" decoding="async" />
+  </a>
   {(figLabel || captionHTML.length > 0) && (
     <figcaption>
       {figLabel && <span class="fig-label">{figLabel}</span>}
@@ -27,11 +39,21 @@ const alt = block.alt.length > 0 ? block.alt : captionText
 
 <style>
   .figure { margin-block: var(--s-5); }
+  .figure-link {
+    display: block;
+    cursor: zoom-in;
+    text-decoration: none;
+    border: var(--rule-w) solid var(--c-rule);
+    transition: border-color var(--t-fast) var(--ease);
+  }
+  .figure-link:hover,
+  .figure-link:focus-visible {
+    border-color: var(--c-rule-strong);
+  }
   .figure img {
     width: 100%;
     height: auto;
     display: block;
-    border: var(--rule-w) solid var(--c-rule);
   }
   .fig-label {
     font-weight: var(--w-mono-strong);
