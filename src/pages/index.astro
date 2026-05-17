@@ -3,6 +3,7 @@ import BaseLayout from '~/layouts/BaseLayout.astro'
 import HomeFeaturedRelease from '~/components/HomeFeaturedRelease.astro'
 import HomeActiveProjects from '~/components/HomeActiveProjects.astro'
 import HomeActivityFeed from '~/components/HomeActivityFeed.astro'
+import HomeTipJar from '~/components/HomeTipJar.astro'
 
 import { source } from '~/lib/source'
 import { organizationSchema } from '~/lib/schema'
@@ -24,7 +25,10 @@ const activity = recent.slice(0, 15)
   {featured && <hr class="container section-divider" />}
 
   <div class="container home-split">
-    <HomeActiveProjects projects={projects} sectionNumber={featured ? '§02' : '§01'} />
+    <div class="home-left">
+      <HomeActiveProjects projects={projects} sectionNumber={featured ? '§02' : '§01'} />
+      <HomeTipJar />
+    </div>
     <HomeActivityFeed items={activity} sectionNumber={featured ? '§03' : '§02'} />
   </div>
 </BaseLayout>
@@ -42,6 +46,7 @@ const activity = recent.slice(0, 15)
     padding-block: var(--s-6);
     align-items: start;
   }
+  .home-left { min-width: 0; }
   @media (max-width: 800px) {
     .home-split {
       grid-template-columns: 1fr;
