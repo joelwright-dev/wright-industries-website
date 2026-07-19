@@ -71,6 +71,55 @@ function plainOf(runs: ReadonlyArray<{ plain_text?: string }>): string {
   return runs.map((r) => r.plain_text ?? '').join('')
 }
 
+/** Flatten any Notion property value to a plain string. Covers the common
+ * property types; anything exotic (files, relations, rollups) renders empty.
+ * Used to project a database's rows into a simple table. */
+export function propertyPlainText(value: Properties[string]): string {
+  switch (value.type) {
+    case 'title':
+      return plainOf(value.title)
+    case 'rich_text':
+      return plainOf(value.rich_text)
+    case 'number':
+      return value.number === null ? '' : String(value.number)
+    case 'select':
+      return value.select?.name ?? ''
+    case 'status':
+      return value.status?.name ?? ''
+    case 'multi_select':
+      return value.multi_select.map((o) => o.name).join(', ')
+    case 'date': {
+      const d = value.date
+      if (!d) return ''
+      return d.end ? `${d.start} – ${d.end}` : d.start
+    }
+    case 'checkbox':
+      return value.checkbox ? '✓' : ''
+    case 'url':
+      return value.url ?? ''
+    case 'email':
+      return value.email ?? ''
+    case 'phone_number':
+      return value.phone_number ?? ''
+    case 'created_time':
+      return value.created_time
+    case 'last_edited_time':
+      return value.last_edited_time
+    case 'people':
+      return value.people.map((p) => ('name' in p ? (p.name ?? '') : '')).join(', ')
+    case 'formula': {
+      const f = value.formula
+      if (f.type === 'string') return f.string ?? ''
+      if (f.type === 'number') return f.number === null ? '' : String(f.number)
+      if (f.type === 'boolean') return f.boolean ? '✓' : ''
+      if (f.type === 'date') return f.date?.start ?? ''
+      return ''
+    }
+    default:
+      return ''
+  }
+}
+
 /** ISO YYYY-MM-DD slice of an ISO 8601 timestamp. */
 export function isoDate(input: string | null): string | null {
   if (!input) return null

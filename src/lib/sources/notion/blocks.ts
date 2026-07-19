@@ -11,6 +11,7 @@ import type { BlockObjectResponse } from '@notionhq/client/build/src/api-endpoin
 import type {
   ContentBlock,
   ListItem,
+  TableBlock,
   TableRow,
 } from '~/lib/content-blocks'
 
@@ -24,9 +25,17 @@ export interface BlockNode {
   readonly children: readonly BlockNode[]
 }
 
+/** Pre-resolved tables for `child_database` blocks, keyed by the database
+ * block id. Built async in the Notion source (which has the API client) and
+ * threaded in here so the pure converter can slot them into place. */
+export type DbTables = ReadonlyMap<string, TableBlock>
+
+const NO_TABLES: DbTables = new Map()
+
 export function convertBlocks(
   nodes: readonly BlockNode[],
   resolveLink: LinkResolver = NO_RESOLVE,
+  dbTables: DbTables = NO_TABLES,
 ): readonly ContentBlock[] {
   const out: ContentBlock[] = []
   let listBuf: { ordered: boolean; items: ListItem[] } | null = null
@@ -47,7 +56,7 @@ export function convertBlocks(
         : toRuns(node.block.numbered_list_item.rich_text, resolveLink)
       const item: ListItem = {
         runs,
-        children: convertBlocks(node.children, resolveLink),
+        children: convertBlocks(node.children, resolveLink, dbTables),
       }
       if (!listBuf || listBuf.ordered !== ordered) {
         flushList()
@@ -59,7 +68,7 @@ export function convertBlocks(
 
     flushList()
 
-    const converted = convertOne(node, resolveLink)
+    const converted = convertOne(node, resolveLink, dbTables)
     if (converted) out.push(converted)
   }
 
@@ -67,7 +76,11 @@ export function convertBlocks(
   return out
 }
 
-function convertOne(node: BlockNode, resolveLink: LinkResolver): ContentBlock | null {
+function convertOne(
+  node: BlockNode,
+  resolveLink: LinkResolver,
+  dbTables: DbTables,
+): ContentBlock | null {
   const b = node.block
   switch (b.type) {
     case 'heading_1':
@@ -82,7 +95,7 @@ function convertOne(node: BlockNode, resolveLink: LinkResolver): ContentBlock | 
       return {
         kind: 'quote',
         runs: toRuns(b.quote.rich_text, resolveLink),
-        children: convertBlocks(node.children, resolveLink),
+        children: convertBlocks(node.children, resolveLink, dbTables),
       }
     case 'code':
       return {
@@ -96,13 +109,13 @@ function convertOne(node: BlockNode, resolveLink: LinkResolver): ContentBlock | 
         kind: 'callout',
         icon: extractIcon(b.callout.icon),
         runs: toRuns(b.callout.rich_text, resolveLink),
-        children: convertBlocks(node.children, resolveLink),
+        children: convertBlocks(node.children, resolveLink, dbTables),
       }
     case 'toggle':
       return {
         kind: 'toggle',
         summary: toRuns(b.toggle.rich_text, resolveLink),
-        children: convertBlocks(node.children, resolveLink),
+        children: convertBlocks(node.children, resolveLink, dbTables),
       }
     case 'image': {
       const src = b.image.type === 'external' ? b.image.external.url : b.image.file.url
@@ -208,8 +221,10 @@ function convertOne(node: BlockNode, resolveLink: LinkResolver): ContentBlock | 
       // Handled by the table case via children.
       return null
     case 'child_database':
-      // Used by discovery; not rendered.
-      return null
+      // Rendered as a simple table when its rows were pre-resolved by the
+      // Notion source; otherwise (e.g. the per-project notes DB, which is
+      // filtered out upstream) it collapses.
+      return dbTables.get(b.id) ?? null
     case 'column_list':
     case 'column':
       // Notion columns flatten into sequential blocks for now — the site

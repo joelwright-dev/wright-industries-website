@@ -20,7 +20,7 @@ import type {
   RenderedEntry,
   RenderedProject,
 } from '~/lib/sources/ContentSource'
-import type { ContentBlock } from '~/lib/content-blocks'
+import type { ContentBlock, InlineRuns, TableBlock, TableRow } from '~/lib/content-blocks'
 import {
   classifyEntry,
   normaliseProjectStatus,
@@ -36,8 +36,9 @@ import {
   readRichText,
   readSelect,
   readTitle,
+  propertyPlainText,
 } from './properties'
-import { convertBlocks, numberFigures, type BlockNode } from './blocks'
+import { convertBlocks, numberFigures, type BlockNode, type DbTables } from './blocks'
 import { localizeImageUrl, localizeImagesInBlocks } from './images'
 import type { LinkResolver } from './rich-text'
 
@@ -91,8 +92,9 @@ export class NotionContentSource implements ContentSource {
       this.getLinkResolver(),
     ])
     const overviewNodes = tree.filter((n) => n.block.type !== 'child_database')
+    const dbTables = await this.resolveDbTables(overviewNodes)
     const blocks = await localizeImagesInBlocks(
-      numberFigures(convertBlocks(overviewNodes, resolveLink)),
+      numberFigures(convertBlocks(overviewNodes, resolveLink, dbTables)),
     )
     return { ...internal.meta, blocks }
   }
@@ -110,8 +112,9 @@ export class NotionContentSource implements ContentSource {
       this.getBlockTree(internal.pageId),
       this.getLinkResolver(),
     ])
+    const dbTables = await this.resolveDbTables(tree)
     const blocks = await localizeImagesInBlocks(
-      numberFigures(convertBlocks(tree, resolveLink)),
+      numberFigures(convertBlocks(tree, resolveLink, dbTables)),
     )
     return { ...internal.meta, blocks }
   }
@@ -343,6 +346,65 @@ export class NotionContentSource implements ContentSource {
       cursor = res.has_more ? (res.next_cursor ?? undefined) : undefined
     } while (cursor)
     return all
+  }
+
+  // Walk a converted block tree for `child_database` blocks and pre-build a
+  // simple TableBlock for each, keyed by the database block id so the (sync)
+  // converter can slot them in. A `child_database` block's id is also its
+  // database id.
+  private async resolveDbTables(
+    nodes: readonly BlockNode[],
+  ): Promise<DbTables> {
+    const dbIds: string[] = []
+    const collect = (ns: readonly BlockNode[]): void => {
+      for (const n of ns) {
+        if (n.block.type === 'child_database') dbIds.push(n.block.id)
+        collect(n.children)
+      }
+    }
+    collect(nodes)
+
+    const map = new Map<string, TableBlock>()
+    await Promise.all(
+      dbIds.map(async (id) => {
+        const table = await this.buildDbTable(id)
+        if (table) map.set(id, table)
+      }),
+    )
+    return map
+  }
+
+  // Project a Notion database into a flat table: header row = column names
+  // (title column first), one body row per page. No nesting, no per-column
+  // typing beyond `propertyPlainText`.
+  private async buildDbTable(databaseId: string): Promise<TableBlock | null> {
+    const [schema, pages] = await Promise.all([
+      withRetry(() => this.client.databases.retrieve({ database_id: databaseId })),
+      this.queryAllDatabasePages(databaseId),
+    ])
+    const props = 'properties' in schema ? schema.properties : {}
+    const names = Object.keys(props)
+    if (names.length === 0) return null
+    const titleName = names.find((n) => props[n]?.type === 'title')
+    const columns = titleName
+      ? [titleName, ...names.filter((n) => n !== titleName)]
+      : names
+
+    const headerCells: InlineRuns[] = columns.map((c) => [{ text: c }])
+    const bodyRows: TableRow[] = pages.map((page) => ({
+      cells: columns.map((c) => {
+        const value = page.properties[c]
+        const text = value ? propertyPlainText(value) : ''
+        return text ? [{ text }] : []
+      }),
+    }))
+
+    return {
+      kind: 'table',
+      hasHeaderRow: true,
+      hasHeaderColumn: false,
+      rows: [{ cells: headerCells }, ...bodyRows],
+    }
   }
 
   private async queryAllDatabasePages(
