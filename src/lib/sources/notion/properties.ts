@@ -4,6 +4,9 @@
 
 import type { PageObjectResponse } from '@notionhq/client/build/src/api-endpoints'
 
+import type { InlineRuns } from '~/lib/content-blocks'
+import { toRuns, type LinkResolver } from './rich-text'
+
 type Properties = PageObjectResponse['properties']
 
 /** Get a property by name with a type filter. Returns null on mismatch. */
@@ -117,6 +120,35 @@ export function propertyPlainText(value: Properties[string]): string {
     }
     default:
       return ''
+  }
+}
+
+/** Project a Notion property value to renderable InlineRuns for a table cell.
+ * Unlike `propertyPlainText`, this keeps links clickable: url/email/phone
+ * columns become hrefs, and rich_text/title columns preserve any embedded
+ * links (and formatting). Everything else falls back to the plain-text
+ * projection wrapped in a single run. */
+export function propertyRuns(
+  value: Properties[string],
+  resolveLink: LinkResolver = () => null,
+): InlineRuns {
+  switch (value.type) {
+    case 'title':
+      return toRuns(value.title, resolveLink)
+    case 'rich_text':
+      return toRuns(value.rich_text, resolveLink)
+    case 'url':
+      return value.url ? [{ text: value.url, href: value.url }] : []
+    case 'email':
+      return value.email ? [{ text: value.email, href: `mailto:${value.email}` }] : []
+    case 'phone_number':
+      return value.phone_number
+        ? [{ text: value.phone_number, href: `tel:${value.phone_number}` }]
+        : []
+    default: {
+      const text = propertyPlainText(value)
+      return text ? [{ text }] : []
+    }
   }
 }
 

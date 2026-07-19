@@ -36,7 +36,7 @@ import {
   readRichText,
   readSelect,
   readTitle,
-  propertyPlainText,
+  propertyRuns,
 } from './properties'
 import { convertBlocks, numberFigures, type BlockNode, type DbTables } from './blocks'
 import { localizeImageUrl, localizeImagesInBlocks } from './images'
@@ -376,7 +376,8 @@ export class NotionContentSource implements ContentSource {
 
   // Project a Notion database into a flat table: header row = column names
   // (title column first), one body row per page. No nesting, no per-column
-  // typing beyond `propertyPlainText`.
+  // typing beyond `propertyRuns` (which keeps url/email/phone/link cells
+  // clickable).
   private async buildDbTable(databaseId: string): Promise<TableBlock | null> {
     const [schema, pages] = await Promise.all([
       withRetry(() => this.client.databases.retrieve({ database_id: databaseId })),
@@ -394,8 +395,7 @@ export class NotionContentSource implements ContentSource {
     const bodyRows: TableRow[] = pages.map((page) => ({
       cells: columns.map((c) => {
         const value = page.properties[c]
-        const text = value ? propertyPlainText(value) : ''
-        return text ? [{ text }] : []
+        return value ? propertyRuns(value) : []
       }),
     }))
 
